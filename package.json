@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node index.js"
   },
-
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tillz/parson.git"
+  },
   "dependencies": {
     "express": "^4.13.3",
     "socket.io": "^2.0.1",
@@ -16,4 +19,8 @@
   },
   "author": "Till Zimmermann",
   "license": "Closed Source so far"
+  "bugs": {
+    "url": "https://github.com/tillz/parson/issues"
+  },
+  "homepage": "https://github.com/tillz/parson#readme"
 }
