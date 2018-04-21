@@ -1,0 +1,189 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=500px, initial-scale=1">
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.js" integrity="sha256-MRXUjKPZRRi+LHqT1KY/uoxyFF2JLOp2b329vX4p+2Y=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<style type="text/css"></style>
+		<script type="text/javascript">
+		
+        var socket = io();
+        socket.on('redirect', function(a){
+            window.location=a
+        });
+        jQuery.fn.extend({
+          autoHeight: function () {
+            function autoHeight_(element) {
+              return jQuery(element)
+                .css({ 'height': 'auto', 'overflow-y': 'hidden' })
+                .height(element.scrollHeight);
+            }
+            return this.each(function() {
+              autoHeight_(this).on('input', function() {
+                autoHeight_(this);
+              });
+            });
+          }
+        });
+        function checkAppend() {
+            var empty=false;
+            $.each($(".form_row"), function(k,v){
+                if(  $(v).find('.form_id').first().val()=='' &&
+                     $(v).find('.form_code').first().val()==''
+                )
+                    empty=true;
+            });
+            if(!empty){
+                var html = $(".form_row:first").get(0).outerHTML
+                $(".form_row:last").after(html);
+            }
+        }
+        $(document).ready(function() {
+            $('textarea').autoHeight();
+            $("body").on('input','.form_id, .form_code', checkAppend);
+            $("#single-tab").on('click',function(e){
+                areaToSingle();
+            });
+            $("#form_add").on('click',function(e){
+                if($('#form_codearea').val().trim()!=''){
+                    areaToSingle()
+                }
+                var len=$(".form_row").length
+                var parts={};
+                var i=0;
+                while(i<len-1) {
+                    key = $('.form_id').eq(i).val().trim()
+                    val = {'name':$('.form_code').eq(i).val().trim(), 'js':$('.form_js').eq(i).val().trim()}
+                    parts[key]=val
+                    i++
+                }
+                var quiz={
+                    name:$('#form_title').val(),
+                    parts:parts,
+                    js_pre:$('#form_js_pre').val(),
+                    js_suf:$('#form_js_suf').val()};
+                socket.emit('new',quiz);
+                console.log("asd")
+                e.preventDefault();
+                return false;
+            });
+        });
+        function areaToSingle() {
+            var arrays=$('#form_codearea').val().split("\n")
+            for(var k in arrays) {
+                var val=arrays[k].trim();
+                if(val=='') continue
+                vals=val.split('|');
+                if(vals.length>1) {
+                    $('.form_code').eq(k).val(vals[1])
+                    $('.form_id').eq(k).val(vals[0])
+                    if(vals.length>2) {
+                        $('.form_js').eq(k).val(vals[2])
+                    }
+                }else{
+                    $('.form_code').eq(k).val(arrays[k].trim())
+                    $('.form_id').eq(k).val('A'+k)
+                }
+                checkAppend()
+            }
+        }
+		</script>
+				<title>
+			Parson
+		</title>
+	</head>
+ 
+<body>
+	<div class="container">
+		<div class="jumbotron">
+		    <a href="/puzzles">Zurück</a>
+			<h1>
+				Parson's Puzzles
+			</h1>
+			<p>
+				Dies ist eine Liste der auf dem Server hinterlegten Puzzles
+			</p>
+			<hr class="my-4"> 
+			<form>
+				<div class="form-group">
+					<label for="form_title">
+						Titel
+					</label>
+					<input type="text" class="form-control" id="form_title" aria-describedby="nameHelp" placeholder="Titel">
+						<small id="nameHelp" class="form-text text-muted">
+							Ein Titel, Bitte
+						</small>
+					</div>
+					<div class="form-group">
+						<label for="form_password">
+							Password
+						</label>
+						<input type="password" class="form-control" id="form_password" aria-describedby="passHelp" placeholder="Password">
+						<small id="passHelp" class="form-text text-muted">
+							Ein Passwort, um spaeter bearbeiten zu können
+						</small>
+						</div>
+
+						<label for="form_js_pre">
+							Javascript-Prefix
+						</label>
+						<input type="text" class="form-control" id="form_js_pre" value="var out=''; function print(a){out+=a+'\n'};var feld=[42,42,42]">
+
+						<label for="form_js_suf">
+							Javascript-Suffix
+						</label>
+						<input type="text" class="form-control" id="form_js_suf" value="out;">
+						
+						
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                          <li class="nav-item">
+                            <a class="nav-link active" id="single-tab" data-toggle="tab" href="#single" role="tab" aria-controls="single" aria-selected="true">Zeilenweise Eingabe</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="multiple-tab" data-toggle="tab" href="#multiple" role="tab" aria-controls="multiple" aria-selected="false">Gesamt-Eingabe</a>
+                          </li>
+                        </ul>
+						
+						
+						
+						<div class="tab-content" id="nav-tabContent">
+							<div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
+								<div class="row form_row">
+									<div class="col">
+										<input type="text" class="form-control form_id" placeholder="Bezeichner">
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" class="form-control form_code" placeholder="Programmcode">
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" class="form-control form_js" placeholder="Javascript-Equivalent">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-pane fade" id="multiple" role="tabpanel" aria-labelledby="multiple-tab">
+                                <div class="form-group">
+                                    <label for="form_codearea">
+                                        Programmcode hier eintragen
+                                    </label>
+                                    <textarea style="min-height:80px;" class="form-control" id="form_codearea" rows="3"></textarea> 
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="form_add">
+                            Submit
+                        </button>
+                    </div>
+                        
+                    </div>
+                </form>
+            </div>
+        </div>
+    </body>

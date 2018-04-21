@@ -1,0 +1,175 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.js" integrity="sha256-MRXUjKPZRRi+LHqT1KY/uoxyFF2JLOp2b329vX4p+2Y=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="/common.js"></script>
+        <link rel="stylesheet" href="/common.css" />
+		<script>
+		    var grid=40;
+            var url = window.location.pathname.split('/');
+            var quizID = url[url.length-1];
+		    window.serialized='';
+		    $(document).ready(function() {
+                $(document).bind('touchmove', function(e) {
+                   e.preventDefault();
+                }, false);
+                $('#loadLsg').on('click', function(e) {
+                   window.serialized=$('#form_reload').val().trim();
+                   render()
+                   serializeQuiz()
+                });
+                $('#eval').on('click', function(e) {
+                    $('#js_eval > textarea').text(eval($('#js_show > textarea').val()))
+                });
+                if(localStorage.getItem("quizstate_"+quizID)!=undefined){
+                    window.serialized=JSON.parse(localStorage.getItem("quizstate_"+quizID))
+                    $('#serialized').text(window.serialized)
+                }
+                
+                
+            });
+            var socket = io();
+            socket.on('connect', function(a){
+                socket.emit('request',url[url.length-1])
+            });
+            socket.on('state', function(a){
+                $('.jumbotron > h1').text(a.name)
+                window.parts=a.parts
+                window.js_pre=a.js_pre
+                window.js_suf=a.js_suf
+                render()
+                doNewDraggable();
+            });
+            
+            function doLevel(event, ui) {
+                        var dropped = ui.item;
+                        var pos = ui.position.left
+                        console.log(ui.position)
+                        var curMargin=$(dropped).data('level');
+                        if(curMargin == undefined) {
+                            curMargin=0;
+                        }else{
+                            curMargin=parseInt(curMargin)
+                        }
+                        var newMargin=Math.round((pos+curMargin*grid) / grid);
+                        newMargin=(newMargin>0?newMargin:0)
+                        $(dropped).data('level',newMargin)
+                        renderLevel();
+                        serializeQuiz();
+                    }
+            function doNewDraggable() {
+                $("#bucket").sortable({connectWith: "#play", receive:function(event, ui){
+                    $(ui.item).data('level','0');
+                    serializeQuiz();
+                }});
+                $("#play").sortable({connectWith: "#bucket", stop:doLevel, receive:doLevel});
+            }
+            function doDraggable() {
+                $(".part").draggable({ cursor: "crosshair", revert: "invalid"});
+                
+                $("#play").droppable({ accept: ".part", drop: function(event, ui) {
+                        var dropped = ui.draggable;
+                        var droppedOn = $(this);
+                        var pos = ui.position.left
+                        var curMargin=parseInt($(ui.draggable).css('margin-left'), 10)
+                        var newMargin=Math.round((pos+curMargin) / grid);
+                        newMargin=(newMargin>0?newMargin:0)
+                        $(ui.draggable).data('level',newMargin)
+                        $(ui.draggable).css('margin-left',newMargin * grid)
+                        $(dropped).detach().css({top: 0,left: 0}).appendTo(droppedOn);      
+                    },out: function(event, elem) {
+                        $(this).removeClass("over");
+                    }
+                });
+                $("#play").sortable();
+
+                $("#bucket").droppable({ accept: ".part", drop: function(event, ui) {
+                    var dropped = ui.draggable;
+                    var droppedOn = $(this);
+                    $(dropped).detach().css({top: 0,left: 0}).appendTo(droppedOn);      
+                }});
+            }
+            function serializeQuiz() {
+                var lastLevel=0;
+                var lii='';
+                var js=window.js_pre+';';
+                $.each($('#play > .part'), function(k,v){
+                    var lvl=parseInt($(v).data('level'));
+                    var idt=$(v).data('id');
+                    console.log(lastLevel+'_'+lvl)
+                    if(lvl>lastLevel){
+                        lii+=Array(lvl-lastLevel+1).join("{")
+                        js+=Array(lvl-lastLevel+1).join("{")
+                    }
+                    if(lvl<lastLevel){
+                        lii+=Array(lastLevel-lvl+1).join("}")
+                        js+=Array(lastLevel-lvl+1).join("}")
+                    }
+                    lii+=idt+';'
+                    js+=window.parts[idt].js+'\n'
+                    lastLevel=lvl
+                });
+                lii+=Array(lastLevel+1).join("}")
+                js+=Array(lastLevel+1).join("}")
+                js+=';'+window.js_suf;
+                $('#serialized').text(lii)
+                console.log(js)
+                $('#js_show > textarea').text(js)
+
+                socket.emit('serialized',lii);
+                window.serialized=lii
+                localStorage.setItem("quizstate_"+quizID, JSON.stringify(window.serialized))
+            }
+        </script>
+		<title>
+			Parson
+		</title>
+	</head>
+    <body>
+        <div class="container">
+            <div class="jumbotron">
+                <a href="/puzzles">Zurück</a>
+                <h1>
+                    Parson's Puzzles
+                </h1>
+                <p>
+                    Dies ist eine Liste der auf dem Server hinterlegten Puzzles
+                </p>
+                <hr class="my-4"> 
+                <div class="row">
+                    <div class="card d-block mx-auto">
+                        <div class="cardcontainer">
+                            <div id="bucket" class="cardd"></div>
+                            <div id="play" class="cardd card2"></div>
+                            <div id="serialized" class="cardd card2"></div>
+                            <div id="js_show" class="cardd card2"><textarea style="width:100%;height:150px;"></textarea></div>
+                            <a role="button" class="btn float-right btn-info" id="eval">Ausführen</a>
+                            <div id="js_eval" class="cardd card2"><textarea style="width:100%;height:150px;"></textarea></div>
+                        </div>
+                    </div>
+                </div>
+                <a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/edit">bearbeiten</a>
+                <a role="button" class="btn float-right btn-secondary" href="{{urlprefix}}{{id}}/show">Beamer-Modus</a>
+                <div class="form-group">
+                    <label for="form_reload">
+                        Bekannte Lösung laden.
+                    </label>
+                    <input type="text" class="form-control" id="form_reload" aria-describedby="reloadHelp" placeholder="Serialisierung eingeben">
+                    <small id="reloadHelp" class="form-text text-muted">
+                        Einen serialisierten Lösungs-String
+                    </small>
+                    </div>
+                    <a role="button" id="loadLsg" class="btn float-right btn-secondary">Laden</a>
+                </div>
+            </div>
+        </div>
+    </body>

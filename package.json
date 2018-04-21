@@ -1,0 +1,19 @@
+{
+  "name": "parson",
+  "version": "1.0.0",
+  "description": "Parson-Puzzle",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+
+  "dependencies": {
+    "express": "^4.13.3",
+    "socket.io": "^2.0.1",
+    "guid": "*",
+    "mustache-express":"*"
+    "node-persist":"2.1.0"
+  },
+  "author": "Till Zimmermann",
+  "license": "Closed Source so far"
+}

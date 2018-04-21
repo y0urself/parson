@@ -1,0 +1,74 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.js" integrity="sha256-MRXUjKPZRRi+LHqT1KY/uoxyFF2JLOp2b329vX4p+2Y=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="/common.js"></script>
+        <link rel="stylesheet" href="/common.css" />
+		<script>
+		    var grid=40;
+            var url = window.location.pathname.split('/');
+            var quizID = url[url.length-1];
+		    window.serialized='';
+		    $(document).ready(function() {
+                $(document).bind('touchmove', function(e) {
+                   e.preventDefault();
+                }, false);
+            });
+            var socket = io();
+            socket.on('connect', function(a){
+                socket.emit('request',url[url.length-2])
+            });
+            socket.on('state', function(a){
+                $('.jumbotron > h1').text(a.name)
+                window.parts=a.parts
+                render();
+            });
+
+            socket.on('connect', function(a){
+                console.log(a)
+            });
+            socket.on('serialized', function(a){
+                console.log(a)
+                $('#serialized').text(a)
+                window.serialized=a
+                render();
+            });
+        </script>
+		<title>
+			Pearson
+		</title>
+	</head>
+    <body>
+        <div class="container">
+            <div class="jumbotron">
+                <a href="/puzzles">Zurück</a>
+                <h1>
+                    Parson's Puzzles
+                </h1>
+                <p>
+                    Dies ist eine Liste der auf dem Server hinterlegten Puzzles
+                </p>
+                <hr class="my-4"> 
+                <div class="row">
+                    <div class="card d-block mx-auto">
+                        <div class="cardcontainer">
+                            <div id="bucket" class="cardd"></div>
+                            <div id="play" class="cardd card2"></div>
+                            <div id="serialized" class="cardd card2"></div>
+                        </div>
+                    </div>
+                </div>
+                <a role="button" class="btn float-right btn-info" href="edit">bearbeiten</a>
+                <a role="button" class="btn float-right btn-secondary" href="show">Beamer-Modus</a>
+            </div>
+        </div>
+    </body>
