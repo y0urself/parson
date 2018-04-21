@@ -18,7 +18,7 @@
     "node-persist":"2.1.0"
   },
   "author": "Till Zimmermann",
-  "license": "Closed Source so far"
+  "license": "Closed Source so far",
   "bugs": {
     "url": "https://github.com/tillz/parson/issues"
   },
