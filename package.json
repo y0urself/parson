@@ -14,7 +14,7 @@
     "express": "^4.13.3",
     "socket.io": "^2.0.1",
     "guid": "*",
-    "mustache-express":"*"
+    "mustache-express":"*",
     "node-persist":"2.1.0"
   },
   "author": "Till Zimmermann",
