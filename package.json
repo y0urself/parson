@@ -15,6 +15,7 @@
     "socket.io": "^2.0.1",
     "guid": "*",
     "mustache-express":"*",
+    "uuid":"*",
     "node-persist":"2.1.0"
   },
   "author": "Till Zimmermann",
