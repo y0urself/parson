@@ -114,22 +114,22 @@
                     var idt=$(v).data('id');
                     console.log(lastLevel+'_'+lvl)
                     if(lvl>lastLevel){
-                        lii+=Array(lvl-lastLevel+1).join("{")
+                        lii+=Array(lvl-lastLevel+1).join("{ ")
                         js+=Array(lvl-lastLevel+1).join("{")
                     }
                     if(lvl<lastLevel){
-                        lii+=Array(lastLevel-lvl+1).join("}")
+                        lii+=Array(lastLevel-lvl+1).join("} ")
                         js+=Array(lastLevel-lvl+1).join("}")
                     }
-                    lii+=idt+';'
-                    js+=window.parts[idt].js+'\n'
-                    lastLevel=lvl
+                    lii += idt+' ';
+                    js+=window.parts[idt].js+'\n';
+                    lastLevel=lvl;
                 });
-                lii+=Array(lastLevel+1).join("}")
-                js+=Array(lastLevel+1).join("}")
+                lii+=Array(lastLevel+1).join("}");
+                js+=Array(lastLevel+1).join("}");
                 js+=';'+window.js_suf;
-                $('#serialized').text(lii)
-                $('#js_show').val(js_beautify(js))
+                $('#serialized').text(lii);
+                $('#js_show').val(js_beautify(js));
 
                 socket.emit('serialized',lii);
                 window.serialized=lii

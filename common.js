@@ -1,7 +1,7 @@
 function render() {
     var bucketParts={};
     var playParts={}
-    var unser=window.serialized.split(';')
+    var unser=window.serialized.split(' ')
     level=0;
     for(var k in unser) {
         if(unser[k]=='')
