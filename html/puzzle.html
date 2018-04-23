@@ -9,7 +9,11 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.js" integrity="sha256-MRXUjKPZRRi+LHqT1KY/uoxyFF2JLOp2b329vX4p+2Y=" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-css.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-html.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		<script src="/common.js"></script>
         <link rel="stylesheet" href="/common.css" />
@@ -47,6 +51,7 @@
                 window.js_pre=a.js_pre
                 window.js_suf=a.js_suf
                 render()
+                serializeQuiz()
                 doNewDraggable();
             });
             
@@ -123,7 +128,7 @@
                 js+=';'+window.js_suf;
                 $('#serialized').text(lii)
                 console.log(js)
-                $('#js_show > textarea').text(js)
+                $('#js_show > textarea').text(js_beautify(js))
 
                 socket.emit('serialized',lii);
                 window.serialized=lii
