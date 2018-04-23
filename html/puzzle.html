@@ -32,7 +32,7 @@
                    serializeQuiz()
                 });
                 $('#eval').on('click', function(e) {
-                    $('#js_eval').text(eval("var js_input="+$('#js_input').val()+";"+$('#js_show').val()))
+                    $('#js_eval').val(eval("var js_input="+$('#js_input').val()+";"+$('#js_show').val()))
                 });
                 if(localStorage.getItem("quizstate_"+quizID)!=undefined){
                     window.serialized=JSON.parse(localStorage.getItem("quizstate_"+quizID))
@@ -129,8 +129,7 @@
                 js+=Array(lastLevel+1).join("}")
                 js+=';'+window.js_suf;
                 $('#serialized').text(lii)
-                console.log(js)
-                $('#js_show').text(js_beautify(js))
+                $('#js_show').val(js_beautify(js))
 
                 socket.emit('serialized',lii);
                 window.serialized=lii
