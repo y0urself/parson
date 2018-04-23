@@ -6,6 +6,7 @@ var io = require('socket.io')(http);
 var quiz = require('./quiz.js');
 var mustacheExpress = require('mustache-express');
 const storage = require('node-persist');
+const passwordHash = require('password-hash');
 storage.initSync();
 //*********************************************************************END
 
@@ -28,7 +29,7 @@ console.log(puzzles)
 app.get('/puzzles/:puzzleID', function(req, res){
     switch(req.params.puzzleID) {
         case 'new':
-            res.render('new',{id:req.params.puzzleID});
+            res.render('new',{});
         break;
         case 'local':
             res.render('puzzle',{urlprefix:'/puzzles/',id:req.params.puzzleID});
@@ -51,8 +52,8 @@ app.get('/puzzles/:puzzleID/show', function(req, res){
 
 });
 
-app.get('/puzzles/:puzzleID/edit', function(req, res){
-    res.render('edit',{urlprefix:'./',puzzles:puzzles});
+app.get(['/puzzles/:puzzleID/edit','/puzzles/:puzzleID/duplicate'], function(req, res){
+    res.render('new',{id:req.params.puzzleID});
 });
 
 app.get('/common.js', function(req, res){
@@ -81,11 +82,14 @@ io.on('connection', function(socket) {
     
     socket.on('request',function(msg){
         console.log('request:'+msg)
-        if(puzzles[msg]==undefined)
+        if(puzzles[msg]==undefined){
             socket.emit('state','ERROR')
-        else
-            socket.emit('state',puzzles[msg])
+        }else{
+            var sendquiz = Object.assign({},puzzles[msg])
+            sendquiz.password=false;
+            socket.emit('state',sendquiz)
             socket.quizid=msg
+        }
     });
     socket.on('serialized',function(msg){
         puzzles[socket.quizid].serialization=msg
@@ -93,11 +97,26 @@ io.on('connection', function(socket) {
     });
 
     socket.on('new',function(msg){
-        var q=new quiz(msg.name, msg.parts, msg.js_pre, msg.js_suf)
-        console.log(q.id)
+        var q=new quiz(msg.name, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, passwordHash.generate(msg.password))
         puzzles[q.id]=q
+        console.log('new:')
+        console.log(q)
         socket.emit('redirect','/puzzles/'+q.id)
         storage.setItemSync('puzzles',puzzles)
+    });
+
+    socket.on('edit',function(msg){
+        if(puzzles[msg.qid]!=undefined) {
+            if(passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password,puzzles[msg.qid].password)){
+                var q=new quiz(msg.name, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, puzzles[msg.qid].password, msg.qid)
+                puzzles[q.id]=q
+                socket.emit('redirect','/puzzles/'+q.id)
+                storage.setItemSync('puzzles',puzzles)
+            }else{
+                console.log("wrong PW")
+                socket.emit('alert','Passort falsch!')
+            }
+        }
     });
 
 

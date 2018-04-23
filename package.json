@@ -12,11 +12,12 @@
   },
   "dependencies": {
     "express": "^4.13.3",
-    "socket.io": "^2.0.1",
     "guid": "*",
-    "mustache-express":"*",
-    "uuid":"*",
-    "node-persist":"2.1.0"
+    "mustache-express": "*",
+    "node-persist": "2.1.0",
+    "password-hash": "^1.2.2",
+    "socket.io": "^2.0.1",
+    "uuid": "*"
   },
   "author": "Till Zimmermann",
   "license": "Closed Source so far",

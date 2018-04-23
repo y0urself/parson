@@ -18,6 +18,39 @@
         socket.on('redirect', function(a){
             window.location=a
         });
+        socket.on('alert', function(a){
+            alert(a)
+        });
+        socket.on('state', function(a){
+            window.parts=a.parts
+            fillParts()
+            $('#form_title').val(a.name)
+            $('#form_js_input').val(a.js_input)
+            $('#form_js_pre').val(a.js_pre)
+            $('#form_js_suf').val(a.js_suf)
+
+        });
+        
+        var url = window.location.pathname.split('/');
+        window.qid=false;
+        if(url[url.length-1]=='edit'){
+            window.qid=url[url.length-2]
+            socket.emit('request',window.qid)
+        }
+        if(url[url.length-1]=='duplicate'){
+            socket.emit('request',url[url.length-2])
+        }
+
+        function fillParts(){
+            var k=0;
+            for(var i in window.parts) {
+                $('.form_id').eq(k).val(i)
+                $('.form_name').eq(k).val(window.parts[i].name)
+                $('.form_js').eq(k).val(window.parts[i].js)
+                checkAppend();
+                k++
+            }
+        }
         jQuery.fn.extend({
           autoHeight: function () {
             function autoHeight_(element) {
@@ -36,7 +69,7 @@
             var empty=false;
             $.each($(".form_row"), function(k,v){
                 if(  $(v).find('.form_id').first().val()=='' &&
-                     $(v).find('.form_code').first().val()==''
+                     $(v).find('.form_name').first().val()==''
                 )
                     empty=true;
             });
@@ -47,7 +80,7 @@
         }
         $(document).ready(function() {
             $('textarea').autoHeight();
-            $("body").on('input','.form_id, .form_code', checkAppend);
+            $("body").on('input','.form_id, .form_name', checkAppend);
             $("#single-tab").on('click',function(e){
                 areaToSingle();
             });
@@ -60,16 +93,20 @@
                 var i=0;
                 while(i<len-1) {
                     key = $('.form_id').eq(i).val().trim()
-                    val = {'name':$('.form_code').eq(i).val().trim(), 'js':$('.form_js').eq(i).val().trim()}
+                    val = {'name':$('.form_name').eq(i).val().trim(), 'js':$('.form_js').eq(i).val().trim()}
                     parts[key]=val
                     i++
                 }
                 var quiz={
+                    qid:window.qid,
                     name:$('#form_title').val(),
                     parts:parts,
+                    password:$('#form_password').val(),
+                    js_input:$('#form_js_input').val(),
                     js_pre:$('#form_js_pre').val(),
-                    js_suf:$('#form_js_suf').val()};
-                socket.emit('new',quiz);
+                    js_suf:$('#form_js_suf').val()
+                };
+                socket.emit((window.qid==false ? 'new' : 'edit'),quiz);
                 console.log("asd")
                 e.preventDefault();
                 return false;
@@ -82,17 +119,21 @@
                 if(val=='') continue
                 vals=val.split('|');
                 if(vals.length>1) {
-                    $('.form_code').eq(k).val(vals[1])
+                    $('.form_name').eq(k).val(vals[1])
                     $('.form_id').eq(k).val(vals[0])
                     if(vals.length>2) {
                         $('.form_js').eq(k).val(vals[2])
                     }
                 }else{
-                    $('.form_code').eq(k).val(arrays[k].trim())
+                    $('.form_name').eq(k).val(arrays[k].trim())
                     $('.form_id').eq(k).val('A'+k)
                 }
                 checkAppend()
             }
+        }
+        
+        function load() {
+            
         }
 		</script>
 				<title>
@@ -117,73 +158,98 @@
 						Titel
 					</label>
 					<input type="text" class="form-control" id="form_title" aria-describedby="nameHelp" placeholder="Titel">
-						<small id="nameHelp" class="form-text text-muted">
-							Ein Titel, Bitte
-						</small>
-					</div>
-					<div class="form-group">
-						<label for="form_password">
-							Password
-						</label>
-						<input type="password" class="form-control" id="form_password" aria-describedby="passHelp" placeholder="Password">
-						<small id="passHelp" class="form-text text-muted">
-							Ein Passwort, um spaeter bearbeiten zu können
-						</small>
-						</div>
-
-						<label for="form_js_pre">
-							Javascript-Prefix
-						</label>
-						<input type="text" class="form-control" id="form_js_pre" value="var out=''; function print(a){out+=a+'\n'};var feld=[42,42,42]">
-
-						<label for="form_js_suf">
-							Javascript-Suffix
-						</label>
-						<input type="text" class="form-control" id="form_js_suf" value="out;">
-						
-						
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                          <li class="nav-item">
-                            <a class="nav-link active" id="single-tab" data-toggle="tab" href="#single" role="tab" aria-controls="single" aria-selected="true">Zeilenweise Eingabe</a>
-                          </li>
-                          <li class="nav-item">
-                            <a class="nav-link" id="multiple-tab" data-toggle="tab" href="#multiple" role="tab" aria-controls="multiple" aria-selected="false">Gesamt-Eingabe</a>
-                          </li>
-                        </ul>
-						
-						
-						
-						<div class="tab-content" id="nav-tabContent">
-							<div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
-								<div class="row form_row">
-									<div class="col">
-										<input type="text" class="form-control form_id" placeholder="Bezeichner">
-                                    </div>
-                                    <div class="col">
-                                        <input type="text" class="form-control form_code" placeholder="Programmcode">
-                                    </div>
-                                    <div class="col">
-                                        <input type="text" class="form-control form_js" placeholder="Javascript-Equivalent">
-                                    </div>
+                    <small id="nameHelp" class="form-text text-muted">
+                        Ein Titel, Bitte
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="form_password">
+                        Password
+                    </label>
+                    <input type="password" class="form-control" id="form_password" aria-describedby="passHelp" placeholder="Password">
+                    <small id="passHelp" class="form-text text-muted">
+                        Ein Passwort, um später bearbeiten zu können
+                    </small>
+                </div>
+<!-- 
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="enableJS">
+                        <label class="form-check-label" for="enableJS">
+                            Javascript Aktivieren?
+                        </label>
+                    </div>
+                </div>
+ -->
+                <div class="form-group">
+                    <label for="form_js_input">
+                        Javascript-Eingabe
+                    </label>
+                    <input type="text" class="form-control" id="form_js_input" value="[42,42,42]">
+                    <small id="form_js_input" class="form-text text-muted">
+                        Dies ist durch den Nutzer änderbar, wird ihm vorgeschlagen. Ist als "js_input" verwendbar.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="form_js_pre">
+                        Javascript-Prefix
+                    </label>
+                    <input type="text" class="form-control" id="form_js_pre" value="var out=''; function print(a){out+=a+'\n'};var feld=js_input">
+                    <small id="form_js_pre" class="form-text text-muted">
+                        Dies ist der Javascript-Code, der _vor_ den Puzzlestücken eingefügt wird
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="form_js_suf">
+                        Javascript-Suffix
+                    </label>
+                    <input type="text" class="form-control" id="form_js_suf" value="out;">
+                    <small id="form_js_suf" class="form-text text-muted">
+                        Dies ist der Javascript-Code, der _nach_ den Puzzlestücken eingefügt wird.
+                        Insbesondere wird der letzte Ausdruck als "Ausgabe" gewertet.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="single-tab" data-toggle="tab" href="#single" role="tab" aria-controls="single" aria-selected="true">Zeilenweise Eingabe</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" id="multiple-tab" data-toggle="tab" href="#multiple" role="tab" aria-controls="multiple" aria-selected="false">Gesamt-Eingabe</a>
+                      </li>
+                    </ul>
+                    
+                    
+                    
+                    <div class="tab-content" id="nav-tabContent">
+                        <div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
+                            <div class="row form_row">
+                                <div class="col">
+                                    <input type="text" class="form-control form_id" placeholder="Bezeichner">
                                 </div>
-                            </div>
-                            
-                            <div class="tab-pane fade" id="multiple" role="tabpanel" aria-labelledby="multiple-tab">
-                                <div class="form-group">
-                                    <label for="form_codearea">
-                                        Programmcode hier eintragen
-                                    </label>
-                                    <textarea style="min-height:80px;" class="form-control" id="form_codearea" rows="3"></textarea> 
+                                <div class="col">
+                                    <input type="text" class="form-control form_name" placeholder="Programmcode">
+                                </div>
+                                <div class="col">
+                                    <input type="text" class="form-control form_js" placeholder="Javascript-Equivalent">
                                 </div>
                             </div>
                         </div>
-                        <button class="btn btn-primary" id="form_add">
-                            Submit
-                        </button>
-                    </div>
                         
+                        <div class="tab-pane fade" id="multiple" role="tabpanel" aria-labelledby="multiple-tab">
+                            <div class="form-group">
+                                <label for="form_codearea">
+                                    Programmcode hier eintragen
+                                </label>
+                                <textarea style="min-height:80px;" class="form-control" id="form_codearea" rows="3"></textarea> 
+                            </div>
+                        </div>
                     </div>
-                </form>
-            </div>
+                    <button class="btn btn-primary" id="form_add">
+                        Submit
+                    </button>
+                </div>
+            </form>
         </div>
-    </body>
+    </div>
+</body>
