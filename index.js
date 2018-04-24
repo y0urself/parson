@@ -236,6 +236,14 @@ io.on('connection', function(socket) {
     });
 
 
+    //Admin-Function - Sendet eine Komplett Nutzerspezifizierte Nachricht an alle Connections.
+    //Beispiel (im Browser): socket.emit('admin_broadcast',{password:'masterpw',topic:'alert',message:{type:'danger', message:"Server startet in 10 Minuten neu!"}});
+    //Beispiel (im Browser): socket.emit('admin_broadcast',{password:'masterpw',topic:'redirect',message:"https://www.youtube.com/watch?v=oHg5SJYRHA0"});
+    socket.on('admin_broadcast', function(msg){
+        if((master_pw != false && msg.password == master_pw)){
+            io.emit(msg.topic, msg.message)
+        }
+    });
 
     // Collaborate: Links an user to a collaboration-Group
     socket.on('collaborate', function(msg){
