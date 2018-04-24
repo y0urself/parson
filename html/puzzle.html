@@ -39,6 +39,9 @@
                 $('#collab').on('click', function(e) {
                    socket.emit('collaborate',$('#form_collab').val().trim());
                 });
+                $('#leave').on('click', function(e) {
+                   socket.emit('collaborate', '');
+                });
                 $('#eval').on('click', function(e) {
 //                     $('#js_eval').val(eval("var js_input="+$('#js_input').val()+";"+$('#js_show').val()))
 //                     return;
@@ -229,9 +232,12 @@
 								Eine Kollaborations-Gruppen-ID angeben 
 							</small>
 						</div>
-						<a role="button" id="collab" class="btn float-right btn-secondary">
-							Beitreten
-						</a>
+						<a role="button" id="leave" class="btn float-right btn-info">
+							Verlassen
+                        </a>
+                        <a role="button" id="collab" class="btn float-right btn-secondary">
+                            Beitreten
+                        </a>
 					</div>
 				</div>
 			</div>
