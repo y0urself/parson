@@ -86,7 +86,7 @@
                 $("#play").droppable({ accept: ".part", drop: function(event, ui) {
                         var dropped = ui.draggable;
                         var droppedOn = $(this);
-                        var pos = ui.position.left
+                        var pos = ui.position.left;
                         var curMargin=parseInt($(ui.draggable).css('margin-left'), 10)
                         var newMargin=Math.round((pos+curMargin) / grid);
                         newMargin=(newMargin>0?newMargin:0)
@@ -104,8 +104,17 @@
                     var droppedOn = $(this);
                     $(dropped).detach().css({top: 0,left: 0}).appendTo(droppedOn);      
                 }});
+                /* Geht nicht :(
+                $("body *").not("#play").droppable({ accept: ".part", drop: function(event, ui) {
+                        var dropped = ui.draggable;
+                        var droppedOn = $("#bucket");
+                        $(dropped).detach().css({top: 0,left: 0}).appendTo(droppedOn);  
+                    }
+                });
+                */
             }
             function serializeQuiz() {
+                var ids = [];
                 var lastLevel=0;
                 var lii='';
                 var js=window.js_pre+';';
@@ -122,14 +131,34 @@
                         js+=Array(lastLevel-lvl+1).join("}")
                     }
                     lii += idt+' ';
+                    console.log("ID: " + idt.replace(/[a-zA-Z]|_[0-9]/, ""));
                     js+=window.parts[idt].js+'\n';
                     lastLevel=lvl;
+                    ids.push(idt.replace(/[a-zA-Z]|_[0-9]/, ""));
                 });
-                lii+=Array(lastLevel+1).join("}");
+                lii+=Array(lastLevel+1).join("} ");
                 js+=Array(lastLevel+1).join("}");
                 js+=';'+window.js_suf;
                 $('#serialized').text(lii);
                 $('#js_show').val(js_beautify(js));
+
+                ids.sort();
+                console.log(ids);
+                duplicates = [];
+                for(var i = 1; i < ids.length; i++){
+                    if (ids[i] == ids[i-1]) {
+                        duplicates.push(ids[i]);
+                    }
+                }
+                duplicates.sort();
+                $("#warnings").html("");
+                if(!duplicates.length == 0){
+                    console.log("duplicates detected");
+                    for (var i in duplicates){
+                        var str = "Das Element " + duplicates[i] + " wird doppelt verwendet</br>";
+                        $("#warnings").append(str);
+                    }
+                }
 
                 socket.emit('serialized',lii);
                 window.serialized=lii
@@ -155,6 +184,7 @@
                     <div class="card d-block mx-auto">
                         <div class="cardcontainer">
                             <div id="bucket" class="cardd"></div>
+                            <div id="warnings"></div>
                             <div id="play" class="cardd card2"></div>
                             <div id="serialized" class="cardd card2"></div>
                             <div id="js_part" class="cardd card2">
