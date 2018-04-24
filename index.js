@@ -165,6 +165,19 @@ app.get('/acorn_interpreter.js', function(req, res){
 var collab = {};
 
 
+function sendSerializationToGroup(group, message){
+    if(collab[group]!=undefined) {
+        var group = collab[group];
+        for(var i in group.sockets) {
+            var thisSocket=io.sockets.sockets[group.sockets[i]]
+            if(thisSocket!=undefined) {
+                thisSocket.emit('serialized',message);
+            }else{
+                delete group[i]
+            }
+        }
+    }
+}
 io.on('connection', function(socket) {
     socket.on('request',function(msg){
         if(puzzles[msg]==undefined){
@@ -178,19 +191,9 @@ io.on('connection', function(socket) {
     });
     socket.on('serialized',function(msg){
         if(puzzles[socket.puzzle] != undefined){ 
-            puzzles[socket.puzzle].serialization=msg
             if(socket.collab!=undefined) {
-                if(collab[socket.puzzle+"_"+socket.collab]!=undefined) {
-                    var group = collab[socket.puzzle+"_"+socket.collab];
-                    for(var i in group.sockets) {
-                        var thisSocket=io.sockets.sockets[group.sockets[i]]
-                        if(thisSocket!=undefined) {
-                            thisSocket.emit('serialized',msg);
-                        }else{
-                            delete group[i]
-                        }
-                    }
-                }
+                collab[socket.puzzle+"_"+socket.collab].serialization=msg
+                sendSerializationToGroup(socket.puzzle+"_"+socket.collab, msg)
             }
         }
     });
@@ -251,9 +254,8 @@ io.on('connection', function(socket) {
         }else{
             if(!collab[socket.puzzle+"_"+socket.collab].sockets.includes(socket.id))
                 collab[socket.puzzle+"_"+socket.collab].sockets.push(socket.id);
+            //group already existed, sending last known serialization
+            sendSerializationToGroup(socket.puzzle+"_"+socket.collab, collab[socket.puzzle+"_"+socket.collab].serialization)
         }
     });
-
-//     socket.on('createRoom', this.handleClientMessages.createRoom);
-//     socket.on('joinRoom', this.handleClientMessages.joinRoom);
 });
