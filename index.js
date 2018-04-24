@@ -180,7 +180,16 @@ io.on('connection', function(socket) {
     socket.on('serialized',function(msg){
         if(puzzles[socket.quizid] != undefined){ 
             puzzles[socket.quizid].serialization=msg
-            io.emit('serialized',puzzles[socket.quizid].serialization);
+            console.log(socket.collab)
+            if(socket.collab!=undefined) {
+                if(collab[socket.puzzle+"_"+socket.collab]!=undefined) {
+                    var group=collab[socket.puzzle+"_"+socket.collab];
+                    console.log(io.sockets.clients)
+                    for(var i in group) {
+                        io.sockets.clients[group[i]].emit('serialized',msg);
+                    }
+                }
+            }
         }
     });
 
@@ -226,12 +235,13 @@ io.on('connection', function(socket) {
     socket.on('collaborate', function(msg){
         console.log('collab:'+msg);
         socket.collab=msg;
-        if(collab[msg]==undefined){
+        if(collab[socket.puzzle+"_"+socket.collab]==undefined){
             collab[socket.puzzle+"_"+socket.collab] = [socket.id];
         }else{
             collab[socket.puzzle+"_"+socket.collab].push(socket.id);
             console.log(collab[socket.puzzle+"_"+socket.collab]);
         }
+        console.log(collab)
     });
 
 //     socket.on('createRoom', this.handleClientMessages.createRoom);
