@@ -237,7 +237,8 @@ io.on('connection', function(socket) {
         if(collab[socket.puzzle+"_"+socket.collab]==undefined){
             collab[socket.puzzle+"_"+socket.collab] = [socket.id];
         }else{
-            collab[socket.puzzle+"_"+socket.collab].push(socket.id);
+            if(! collab[socket.puzzle+"_"+socket.collab].includes(socket.id))
+                collab[socket.puzzle+"_"+socket.collab].push(socket.id);
         }
         console.log('collab'+collab)
     });
