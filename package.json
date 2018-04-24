@@ -11,6 +11,7 @@
     "url": "git+https://github.com/tillz/parson.git"
   },
   "dependencies": {
+    "aws-sdk": "^2.227.1",
     "express": "^4.13.3",
     "guid": "*",
     "mustache-express": "*",
