@@ -223,8 +223,8 @@ io.on('connection', function(socket) {
 
     });
 
-    socket.on('colaborate', function(msg){
-        console.log('colab:'+msg);
+    socket.on('collaborate', function(msg){
+        console.log('collab:'+msg);
         socket.collab=msg;
         if(collab[msg]==undefined){
             collab[socket.puzzle+"_"+socket.collab] = [socket.id];
