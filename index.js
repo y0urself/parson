@@ -5,80 +5,97 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var quiz = require('./quiz.js');
 var mustacheExpress = require('mustache-express');
-// const storage = require('node-persist');
 const passwordHash = require('password-hash');
 
-var AWS = require('aws-sdk');
-AWS.config.update({region:'us-east-1'});
-var ddb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
+const use_dynamo = process.env.DYNAMO === 'yes'
 
+if(use_dynamo) {
+    var AWS = require('aws-sdk');
+    AWS.config.update({region:'us-east-1'});
+    var ddb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
+}
 var puzzles = {}
 
-var dynamo = {
-    put:function() {
-        for(var i in puzzles) {
+if(use_dynamo) {
+    var dynamo = {
+        put:function() {
+            for(var i in puzzles) {
+                var params = {
+                  TableName: 'puzzles',
+                  Item: dynamo.removeEmptyStringElements(puzzles[i])
+                };
+                ddb.put(params, function(err, data) {
+                  if (err) {
+                    console.log("Error", err);
+                  } else {
+        //             console.log("Success", data);
+                  }
+                });
+            }
+        },
+        fetch: function() {
             var params = {
-              TableName: 'puzzles',
-              Item: dynamo.removeEmptyStringElements(puzzles[i])
+              TableName: 'puzzles'
             };
-            ddb.put(params, function(err, data) {
+            // Call DynamoDB to add the item to the table
+            ddb.scan(params, function(err, data) {
               if (err) {
                 console.log("Error", err);
               } else {
+                var ob={};
+                data=data.Items
+                for(var i in data) {
+                    console.log(data[i])
+                    ob[data[i].id]=data[i]
+                }
+                puzzles=ob
     //             console.log("Success", data);
+    //             console.log(puzzles)
               }
             });
-        }
-    },
-    fetch: function() {
-        var params = {
-          TableName: 'puzzles'
-        };
-        // Call DynamoDB to add the item to the table
-        ddb.scan(params, function(err, data) {
-          if (err) {
-            console.log("Error", err);
-          } else {
-            var ob={};
-            data=data.Items
-            for(var i in data) {
-                console.log(data[i])
-                ob[data[i].id]=data[i]
-            }
-            puzzles=ob
-//             console.log("Success", data);
-//             console.log(puzzles)
-          }
-        });
         
-    },
-    del:function(id) {
-        var params = {
-          TableName: 'puzzles',
-          Key: {id:id}
-        };
-        // Call DynamoDB to add the item to the table
-        ddb.delete(params, function(err, data) {
-          if (err) {
-            console.log("Error", err);
-          } else {
-            console.log("suc", data);
+        },
+        del:function(id) {
+            var params = {
+              TableName: 'puzzles',
+              Key: {id:id}
+            };
+            // Call DynamoDB to add the item to the table
+            ddb.delete(params, function(err, data) {
+              if (err) {
+                console.log("Error", err);
+              } else {
+                console.log("suc", data);
+              }
+          });
+        },
+        removeEmptyStringElements: function(obj) {
+          for (var prop in obj) {
+            if (typeof obj[prop] === 'object') {// dive deeper in
+              dynamo.removeEmptyStringElements(obj[prop]);
+            } else if(obj[prop] === '') {// delete elements that are empty strings
+              delete obj[prop];
+            }
           }
-      });
-    },
-    removeEmptyStringElements: function(obj) {
-      for (var prop in obj) {
-        if (typeof obj[prop] === 'object') {// dive deeper in
-          dynamo.removeEmptyStringElements(obj[prop]);
-        } else if(obj[prop] === '') {// delete elements that are empty strings
-          delete obj[prop];
+          return obj;
         }
-      }
-      return obj;
-    }
 
+    }
+}else{
+    const storage = require('node-persist');
+    storage.initSync();
+    var dynamo = {
+        put:function() {
+            storage.setItemSync('puzzles',puzzles)
+        },
+        fetch:function() {
+            puzzles=storage.getItemSync('puzzles');
+        },
+        del:function(id) {
+            dynamo.put()
+        }
+    }
 }
-// storage.initSync();
 //*********************************************************************END
 
 //alle IP-Adressen…
@@ -95,7 +112,6 @@ app.engine('html', mustacheExpress());
 app.set('view engine', 'html');
 app.set('views', __dirname + '/html');
 
-// puzzles=storage.getItemSync('puzzles');
 console.log(puzzles)
 dynamo.fetch()
 
@@ -181,7 +197,6 @@ io.on('connection', function(socket) {
         console.log('new:')
         console.log(q)
         socket.emit('redirect','/puzzles/'+q.id)
-//         storage.setItemSync('puzzles',puzzles)
         dynamo.put();
     });
 
@@ -192,7 +207,6 @@ io.on('connection', function(socket) {
                 puzzles[q.id]=q
                 socket.emit('redirect','/puzzles/'+q.id)
                 dynamo.put();
-//                 storage.setItemSync('puzzles',puzzles)
             }else{
                 console.log("wrong PW")
                 socket.emit('alert','Passort falsch!')
@@ -203,8 +217,8 @@ io.on('connection', function(socket) {
     socket.on('delete',function(msg){
         if(puzzles[msg.qid]!=undefined) {
             if(msg.password == 'my sup3r s3c4re? Master Password!' || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password,puzzles[msg.qid].password))){
-                dynamo.del(msg.qid)
                 delete puzzles[msg.qid]
+                dynamo.del(msg.qid)
                 socket.emit('alert','Erfolgreich gelöscht!')
                 socket.emit('redirect','/puzzles/')
                 dynamo.put();
