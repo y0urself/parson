@@ -155,24 +155,15 @@ app.get('/common.js', function(req, res){
 app.get('/common.css', function(req, res){
   res.sendFile(__dirname + '/common.css');
 });
-
+app.get('/acorn_interpreter.js', function(req, res){
+  res.sendFile(__dirname + '/acorn_interpreter.js');
+});
 
 
 
 
 
 io.on('connection', function(socket) {
-//     socket.emit('gotRooms', this.getRoomsPublic());
-
-
-//     socket.emit('state', quiz);
-//     io.emit('serialized',lastSer)
-//     socket.on('serialized',function(msg){
-//         console.log(msg)
-//         lastSer=msg
-//         io.emit('serialized',msg)
-//     });
-    
     socket.on('request',function(msg){
         console.log('request:'+msg)
         if(puzzles[msg]==undefined){
@@ -227,6 +218,7 @@ io.on('connection', function(socket) {
                 socket.emit('alert','Passort falsch!')
             }
         }
+
     });
 
 

@@ -15,14 +15,18 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-css.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-html.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
-		<script src="/common.js"></script>
+        <script src="/acorn_interpreter.js"></script>		
+        <script src="/common.js"></script>
         <link rel="stylesheet" href="/common.css" />
 		<script>
 		    var grid=40;
-		    var maxlevel=5;
+		    var maxlevel=10;
             var url = window.location.pathname.split('/');
             var quizID = url[url.length-1];
 		    window.serialized='';
+            var socket = io();
+            
+            
 		    $(document).ready(function() {
                 $(document).bind('touchmove', function(e) {
                    e.preventDefault();
@@ -32,17 +36,28 @@
                    render()
                    serializeQuiz()
                 });
+                $('#collab').on('click', function(e) {
+                   socket.emit('collaborate',$('#form_collab').val().trim());
+                });
                 $('#eval').on('click', function(e) {
-                    $('#js_eval').val(eval("var js_input="+$('#js_input').val()+";"+$('#js_show').val()))
+                    var myInterpreter = new Interpreter($('#js_show').val(),
+                    function(interpreter, scope) {
+                      interpreter.setProperty(scope, 'js_input', String($('#js_input').val()));
+
+                      var wrapper = function(text) {
+                        return alert(text);
+                      };
+                      interpreter.setProperty(scope, 'alert',
+                          interpreter.createNativeFunction(wrapper));
+                    });
+                    myInterpreter.run();
+                    $('#js_eval').val(myInterpreter.value)
                 });
                 if(localStorage.getItem("quizstate_"+quizID)!=undefined){
                     window.serialized=JSON.parse(localStorage.getItem("quizstate_"+quizID))
                     $('#serialized').text(window.serialized)
                 }
-                
-                
             });
-            var socket = io();
             socket.on('connect', function(a){
                 socket.emit('request',url[url.length-1])
             });
@@ -74,6 +89,10 @@
                             curMargin=parseInt(curMargin)
                         }
                         var newMargin=Math.round((pos+curMargin*grid) / grid);
+                        if(newMargin>maxlevel || newMargin<-1){
+                            $("#bucket").append(dropped)
+                            $(dropped).remove()
+                        }
                         newMargin=(newMargin>0?newMargin:0)
                         $(dropped).data('level',newMargin)
                         renderLevel();
@@ -142,47 +161,76 @@
 			Parson
 		</title>
 	</head>
-    <body>
-        <div class="container">
-            <div class="jumbotron">
-                <a href="/puzzles">Zurück</a>
-                <h1>
-                    Parson's Puzzles
-                </h1>
-                <p>
-                    Dies ist eine Liste der auf dem Server hinterlegten Puzzles
-                </p>
-                <hr class="my-4"> 
-                <div class="row">
-                    <div class="card d-block mx-auto">
-                        <div class="cardcontainer">
-                            <div id="bucket" class="cardd"></div>
-                            <div id="warnings"></div>
-                            <div id="play" class="cardd card2"></div>
-                            <div id="serialized" class="cardd card2"></div>
-                            <div id="js_part" class="cardd card2">
-                                <textarea id="js_show" style="width:100%;height:150px;"></textarea>
-                                <input id="js_input">
-                                <a role="button" class="btn float-right btn-info" id="eval">Ausführen</a>
-                                <textarea id="js_eval" style="width:100%;height:150px;"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/edit">Bearbeiten</a>
-                <a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/duplicate">Duplizieren</a>
-                <a role="button" class="btn float-right btn-secondary" href="{{urlprefix}}{{id}}/show">Beamer-Modus</a>
-                <div class="form-group">
-                    <label for="form_reload">
-                        Bekannte Lösung laden.
-                    </label>
-                    <input type="text" class="form-control" id="form_reload" aria-describedby="reloadHelp" placeholder="Serialisierung eingeben">
-                    <small id="reloadHelp" class="form-text text-muted">
-                        Einen serialisierten Lösungs-String
-                    </small>
-                    </div>
-                    <a role="button" id="loadLsg" class="btn float-right btn-secondary">Laden</a>
-                </div>
-            </div>
-        </div>
-    </body>
+ 
+<body>
+	<div class="container">
+		<div class="jumbotron">
+			<a href="/puzzles">
+				Zurück
+			</a>
+			<h1>
+				Parson's Puzzles 
+			</h1>
+			<p>
+				Dies ist eine Liste der auf dem Server hinterlegten Puzzles 
+			</p>
+			<hr class="my-4"> 
+			<div class="row">
+				<div class="card d-block mx-auto">
+					<div class="cardcontainer">
+						<div id="bucket" class="cardd">
+						</div>
+						<div id="warnings">
+						</div>
+						<div id="play" class="cardd card2">
+						</div>
+						<div id="serialized" class="cardd card2">
+						</div>
+						<div id="js_part" class="cardd card2">
+							<textarea id="js_show" style="width:100%;height:150px;"></textarea> 
+							<input id="js_input">
+								<a role="button" class="btn float-right btn-info" id="eval">
+									Ausführen
+								</a>
+								<textarea id="js_eval" style="width:100%;height:150px;"></textarea> 
+							</div>
+						</div>
+					</div>
+				</div>
+				<a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/edit">
+					Bearbeiten
+				</a>
+				<a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/duplicate">
+					Duplizieren
+				</a>
+				<a role="button" class="btn float-right btn-secondary" href="{{urlprefix}}{{id}}/show">
+					Beamer-Modus
+				</a>
+				<div class="form-group">
+					<label for="form_reload">
+						Bekannte Lösung laden. 
+					</label>
+					<input type="text" class="form-control" id="form_reload" aria-describedby="reloadHelp" placeholder="Serialisierung eingeben">
+						<small id="reloadHelp" class="form-text text-muted">
+							Einen serialisierten Lösungs-String 
+						</small>
+					</div>
+					<a role="button" id="loadLsg" class="btn float-right btn-secondary">
+						Laden
+					</a>
+					<div class="form-group">
+						<label for="form_collab">
+							Collaborate-Gruppe. 
+						</label>
+						<input type="text" class="form-control" id="form_collab" aria-describedby="collabHelp" placeholder="Gruppen-ID">
+							<small id="collabHelp" class="form-text text-muted">
+								Eine Kollaborations-Gruppen-ID angeben 
+							</small>
+						</div>
+						<a role="button" id="collab" class="btn float-right btn-secondary">
+							Beitreten
+						</a>
+					</div>
+				</div>
+			</div>
+		</body>
