@@ -1,4 +1,5 @@
-var app = require('express')();
+var express = require('express');
+var app = express();
 //just a workaround to automatically open the url in browser
 // var exec = require('child_process').exec;
 var http = require('http').Server(app);
@@ -121,7 +122,6 @@ dynamo.fetch()
 
 
 
-// dynamo.getItem('test')
 app.get('/puzzles/:puzzleID', function(req, res){
     switch(req.params.puzzleID) {
         case 'new':
@@ -135,29 +135,28 @@ app.get('/puzzles/:puzzleID', function(req, res){
     }
 });
 
-// app.get('/puzzles/', function(req, res){
-//     res.render('list',{urlprefix:'./',puzzles:puzzles});
-// });
-
 app.get(['/puzzles/','/'], function(req, res){
     res.render('list',{urlprefix:'/puzzles/',puzzles:Object.values(puzzles)});
 });
 
-app.get('/puzzles/:puzzleID/show', function(req, res){
-    res.render('show',{urlprefix:'./',puzzles:puzzles});
-
-});
+// app.get('/puzzles/:puzzleID/show', function(req, res){
+//     res.render('show',{urlprefix:'./',puzzles:puzzles});
+// });
 
 app.get(['/puzzles/:puzzleID/edit','/puzzles/:puzzleID/duplicate'], function(req, res){
     res.render('new',{id:req.params.puzzleID});
 });
 
+app.use(express.static('static'));
+
 app.get('/common.js', function(req, res){
   res.sendFile(__dirname + '/common.js');
 });
+
 app.get('/common.css', function(req, res){
   res.sendFile(__dirname + '/common.css');
 });
+
 app.get('/acorn_interpreter.js', function(req, res){
   res.sendFile(__dirname + '/acorn_interpreter.js');
 });
@@ -215,7 +214,7 @@ io.on('connection', function(socket) {
                 dynamo.put();
             }else{
                 console.log("wrong PW")
-                socket.emit('alert','Passort falsch!')
+                socket.emit('alert', {type:'danger', message:"Passwort Falsch!"})
             }
         }
     });
@@ -230,12 +229,15 @@ io.on('connection', function(socket) {
                 dynamo.put();
             }else{
                 console.log("wrong PW")
-                socket.emit('alert','Passort falsch!')
+                socket.emit('alert', {type:'danger', message:"Passwort Falsch!"})
             }
         }
 
     });
 
+
+
+    // Collaborate: Links an user to a collaboration-Group
     socket.on('collaborate', function(msg){
         if(msg=='') {
             if(socket.collab!=undefined && socket.puzzle!=undefined){
@@ -244,19 +246,34 @@ io.on('connection', function(socket) {
                     var idx=collab[socket.puzzle+"_"+socket.collab].sockets.indexOf(socket.id)
                     collab[socket.puzzle+"_"+socket.collab].sockets.splice(idx,1)
                 }
+                socket.emit('alert', {type:'success', message:"Du hast die Gruppe >"+socket.collab+"< verlassen!"})
+                delete socket.collab;
             }
-        }
-        socket.collab=msg;
-        if(socket.puzzle==undefined){
-            console.log("Socket did not yet join a puzzle, ignoring")
-        }
-        if(collab[socket.puzzle+"_"+socket.collab]==undefined){
-            collab[socket.puzzle+"_"+socket.collab] = {sockets:[socket.id], serialization:''};
         }else{
-            if(!collab[socket.puzzle+"_"+socket.collab].sockets.includes(socket.id))
-                collab[socket.puzzle+"_"+socket.collab].sockets.push(socket.id);
-            //group already existed, sending last known serialization
-            sendSerializationToGroup(socket.puzzle+"_"+socket.collab, collab[socket.puzzle+"_"+socket.collab].serialization)
+            socket.collab=msg;
+            if(socket.puzzle==undefined){
+                console.log("Socket did not yet join a puzzle, ignoring")
+            }
+            if(collab[socket.puzzle+"_"+socket.collab]==undefined){
+                collab[socket.puzzle+"_"+socket.collab] = {sockets:[socket.id], serialization:''};
+                socket.emit('alert', {type:'success', message:"Du hast die Gruppe >"+msg+"< neu erstellt!"})
+                
+                //request the client to send their serialization
+                socket.emit('serializationRequest','1');
+            }else{
+                if(!collab[socket.puzzle+"_"+socket.collab].sockets.includes(socket.id))
+                    collab[socket.puzzle+"_"+socket.collab].sockets.push(socket.id);
+                //group already existed, sending last known serialization
+                var known_serialization=collab[socket.puzzle+"_"+socket.collab].serialization
+                socket.emit('alert', {type:'success', message:"Du bist der Gruppe >"+msg+"< beigetreten!"})
+                if(known_serialization!=''){
+                    sendSerializationToGroup(socket.puzzle+"_"+socket.collab, known_serialization)
+                }else{
+                    //request the client to send their serialization
+                    socket.emit('serializationRequest','1');
+                    socket.emit('alert', {type:'warning', message:"In der Gruppe existierte noch keine Lösung, daher wurde deine lokale Lösung verwendet!"})
+                }
+            }
         }
     });
 });

@@ -1,61 +1,34 @@
 <html>
-	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.js" integrity="sha256-MRXUjKPZRRi+LHqT1KY/uoxyFF2JLOp2b329vX4p+2Y=" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-css.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-html.min.js"></script>
-		<script src="/socket.io/socket.io.js"></script>
-        <script src="/acorn_interpreter.js"></script>		
-        <script src="/common.js"></script>
-        <link rel="stylesheet" href="/common.css" />
-		<script>
-		    var grid=40;
-		    var maxlevel=10;
+    <head>
+        {{>html_head_top}}
+        <script src="/acorn_interpreter.js"></script>        
+        <script>
+            var grid=40;
+            var maxlevel=10;
             var url = window.location.pathname.split('/');
             var quizID = url[url.length-1];
-		    window.serialized='';
-            var socket = io();
-            
-            
-		    $(document).ready(function() {
+            window.serialized='';
+            function joinCollab(){
+                var collabGroup=$('#form_collab').val().trim()
+                socket.emit('collaborate',collabGroup);
+                localStorage.setItem("collaborate_"+quizID, $('#form_collab').val().trim())
+            }
+            $(document).ready(function() {
                 $(document).bind('touchmove', function(e) {
                    e.preventDefault();
                 }, false);
                 $('#loadLsg').on('click', function(e) {
                    window.serialized=$('#form_reload').val().trim();
-                   render()
-                   serializeQuiz()
+                   ParsonAPP.render()
+                   ParsonAPP.serializeQuiz()
                 });
-                $('#collab').on('click', function(e) {
-                   socket.emit('collaborate',$('#form_collab').val().trim());
-                });
+                $('#collab').on('click', joinCollab);
                 $('#leave').on('click', function(e) {
-                   socket.emit('collaborate', '');
                    $('#form_collab').val("");
+                   joinCollab()
                 });
                 $('#eval').on('click', function(e) {
-//                     $('#js_eval').val(eval("var js_input="+$('#js_input').val()+";"+$('#js_show').val()))
-//                     return;
                     var myInterpreter = new Interpreter("var js_input="+$('#js_input').val()+";"+$('#js_show').val());
-//                     ,
-//                     function(interpreter, scope) {
-//                       interpreter.setProperty(scope, 'js_input', String($('#js_input').val()));
-//                       var wrapper = function(text) {
-//                         return alert(text);
-//                       };
-//                       interpreter.setProperty(scope, 'alert',
-//                           interpreter.createNativeFunction(wrapper));
-//                     });
                     myInterpreter.run();
                     $('#js_eval').val(myInterpreter.value)
                 });
@@ -63,14 +36,21 @@
                     window.serialized=JSON.parse(localStorage.getItem("quizstate_"+quizID))
                     $('#serialized').text(window.serialized)
                 }
+                if(localStorage.getItem("collaborate_"+quizID)!=undefined){
+                    $('#form_collab').val(localStorage.getItem("collaborate_"+quizID))
+                    joinCollab()
+                }
             });
             socket.on('connect', function(a){
                 socket.emit('request',url[url.length-1])
             });
+            socket.on('serializationRequest', function(){
+                ParsonAPP.serializeQuiz();
+            });
             socket.on('serialized', function(a){
                 $('#serialized').text(a)
                 window.serialized=a
-                render();
+                ParsonAPP.render();
             });
             socket.on('state', function(a){
                 console.log(a)
@@ -81,89 +61,11 @@
                 $('#js_input').val(a.js_input)
                 window.js_pre=a.js_pre
                 window.js_suf=a.js_suf
-                render()
-                serializeQuiz()
-                doNewDraggable();
+                ParsonAPP.render()
+                ParsonAPP.serializeQuiz()
+                ParsonAPP.doNewDraggable();
             });
             
-            function doLevel(event, ui) {
-                        var dropped = ui.item;
-                        var pos = ui.position.left
-                        console.log(ui.position)
-                        var curMargin=$(dropped).data('level');
-                        if(curMargin == undefined) {
-                            curMargin=0;
-                        }else{
-                            curMargin=parseInt(curMargin)
-                        }
-                        var newMargin=Math.round((pos+curMargin*grid) / grid);
-                        if(newMargin>maxlevel || newMargin<-1){
-                            $("#bucket").append(dropped)
-                            $(dropped).remove()
-                        }
-                        newMargin=(newMargin>0?newMargin:0)
-                        $(dropped).data('level',newMargin)
-                        renderLevel();
-                        serializeQuiz();
-                    }
-            function doNewDraggable() {
-                $("#bucket").sortable({connectWith: "#play", receive:function(event, ui){
-                    $(ui.item).data('level','0');
-                    serializeQuiz();
-                }});
-                $("#play").sortable({connectWith: "#bucket", stop:doLevel, receive:doLevel});
-            }
-            function serializeQuiz() {
-                var ids = [];
-                var lastLevel=0;
-                var lii='';
-                var js=window.js_pre+';';
-                $.each($('#play > .part'), function(k,v){
-                    var lvl=parseInt($(v).data('level'));
-                    var idt=$(v).data('id');
-                    console.log(lastLevel+'_'+lvl)
-                    if(lvl>lastLevel){
-                        lii+=Array(lvl-lastLevel+1).join("{ ")
-                        js+=Array(lvl-lastLevel+1).join("{")
-                    }
-                    if(lvl<lastLevel){
-                        lii+=Array(lastLevel-lvl+1).join("} ")
-                        js+=Array(lastLevel-lvl+1).join("}")
-                    }
-                    lii += idt+' ';
-                    console.log("ID: " + idt.replace(/[a-zA-Z]|_[0-9]/, ""));
-                    js+=window.parts[idt].js+'\n';
-                    lastLevel=lvl;
-                    ids.push(idt.replace(/[a-zA-Z]|_[0-9]/, ""));
-                });
-                lii+=Array(lastLevel+1).join("} ");
-                js+=Array(lastLevel+1).join("}");
-                js+=';'+window.js_suf;
-                $('#serialized').text(lii);
-                $('#js_show').val(js_beautify(js));
-
-                ids.sort();
-                console.log(ids);
-                duplicates = [];
-                for(var i = 1; i < ids.length; i++){
-                    if (ids[i] == ids[i-1]) {
-                        duplicates.push(ids[i]);
-                    }
-                }
-                duplicates.sort();
-                $("#warnings").html("");
-                if(!duplicates.length == 0){
-                    console.log("duplicates detected");
-                    for (var i in duplicates){
-                        var str = "Das Element " + duplicates[i] + " wird doppelt verwendet</br>";
-                        $("#warnings").append(str);
-                    }
-                }
-
-                socket.emit('serialized',lii);
-                window.serialized=lii
-                localStorage.setItem("quizstate_"+quizID, JSON.stringify(window.serialized))
-            }
         </script>
         <title>
             Parson
@@ -171,6 +73,10 @@
     </head>
  
 <body>
+    <div class="alertWrapper alert-top alert alert-success" role="alert">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <p>Message</p>
+    </div>
     <div class="container">
         <div class="jumbotron">
             <a href="/puzzles">
@@ -223,9 +129,11 @@
             <a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/duplicate">
                 Duplizieren
             </a>
+<!-- 
             <a role="button" class="btn float-right btn-secondary" href="{{urlprefix}}{{id}}/show">
                 Beamer-Modus
             </a>
+ -->
             <div class="form-group">
                 <label for="form_reload">
                     Bekannte Lösung laden. 

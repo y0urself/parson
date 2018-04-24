@@ -57,3 +57,16 @@
                 color:#ff1100;
                 font-style: bold;
             }
+            
+            /* By https://codepen.io/leenawat/ :  https://codepen.io/leenawat/pen/ORPbqE             */
+            .alertWrapper{
+                position: fixed;
+                top: 5px; 
+                left:2%;
+                width: 96%;
+                z-index:100;
+            }
+
+            .alert{
+                display: none;
+            }
