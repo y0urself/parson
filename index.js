@@ -14,6 +14,8 @@ if(use_dynamo) {
     AWS.config.update({region:'us-east-1'});
     var ddb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
 }
+
+
 var puzzles = {}
 
 if(use_dynamo) {
@@ -160,7 +162,7 @@ app.get('/acorn_interpreter.js', function(req, res){
 });
 
 
-
+var collab = {};
 
 
 io.on('connection', function(socket) {
@@ -171,8 +173,9 @@ io.on('connection', function(socket) {
         }else{
             var sendquiz = Object.assign({},puzzles[msg])
             sendquiz.password=false;
-            socket.emit('state',sendquiz)
-            socket.quizid=msg
+            socket.emit('state',sendquiz);
+            socket.puzzle=msg;
+            var col = new Colaboration(msg).add(socket);
         }
     });
     socket.on('serialized',function(msg){
@@ -221,6 +224,16 @@ io.on('connection', function(socket) {
 
     });
 
+    socket.on('colaborate', function(msg){
+        console.log('colab:'+msg);
+        socket.collab=msg;
+        if(collab[msg]==undefined){
+            collab[socket.puzzle+"_"+socket.collab] = [socket.id];
+        }else{
+            collab[socket.puzzle+"_"+socket.collab].push(socket.id);
+            console.log(collab[socket.puzzle+"_"+socket.collab]);
+        }
+    });
 
 //     socket.on('createRoom', this.handleClientMessages.createRoom);
 //     socket.on('joinRoom', this.handleClientMessages.joinRoom);
