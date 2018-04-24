@@ -183,8 +183,14 @@ io.on('connection', function(socket) {
                 if(collab[socket.puzzle+"_"+socket.collab]!=undefined) {
                     var group = collab[socket.puzzle+"_"+socket.collab];
                     for(var i in group) {
-                        console.log("Socket: " + io.sockets.sockets[group[i]]);
-                        //io.sockets.socket(group[i]).emit('serialized',msg);
+                        console.log("Socket: ")
+                        console.log(io.sockets.sockets[group[i]]);
+                        var thisSocket=io.sockets.sockets[group[i]]
+                        if(thisSocket!=undefined) {
+                            thisSocket.emit('serialized',msg);
+                        }else{
+                            delete group[i]
+                        }
                     }
                 }
             }
@@ -230,10 +236,14 @@ io.on('connection', function(socket) {
 
     socket.on('collaborate', function(msg){
         socket.collab=msg;
+        if(socket.puzzle==undefined){
+            console.log("Socket did not yet join a puzzle, ignoring")
+        }
+        //TODO: Send last serialization
         if(collab[socket.puzzle+"_"+socket.collab]==undefined){
             collab[socket.puzzle+"_"+socket.collab] = [socket.id];
         }else{
-            if(! collab[socket.puzzle+"_"+socket.collab].includes(socket.id))
+            if(!collab[socket.puzzle+"_"+socket.collab].includes(socket.id))
                 collab[socket.puzzle+"_"+socket.collab].push(socket.id);
         }
     });
