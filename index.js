@@ -167,7 +167,6 @@ var collab = {};
 
 io.on('connection', function(socket) {
     socket.on('request',function(msg){
-        console.log('request:'+msg)
         if(puzzles[msg]==undefined){
             socket.emit('state','ERROR')
         }else{
@@ -180,7 +179,6 @@ io.on('connection', function(socket) {
     socket.on('serialized',function(msg){
         if(puzzles[socket.puzzle] != undefined){ 
             puzzles[socket.puzzle].serialization=msg
-            console.log(socket.collab)
             if(socket.collab!=undefined) {
                 if(collab[socket.puzzle+"_"+socket.collab]!=undefined) {
                     var group = collab[socket.puzzle+"_"+socket.collab];
@@ -196,8 +194,6 @@ io.on('connection', function(socket) {
     socket.on('new',function(msg){
         var q=new quiz(msg.name, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, passwordHash.generate(msg.password))
         puzzles[q.id]=q
-        console.log('new:')
-        console.log(q)
         socket.emit('redirect','/puzzles/'+q.id)
         dynamo.put();
     });
@@ -240,7 +236,6 @@ io.on('connection', function(socket) {
             if(! collab[socket.puzzle+"_"+socket.collab].includes(socket.id))
                 collab[socket.puzzle+"_"+socket.collab].push(socket.id);
         }
-        console.log('collab'+collab)
     });
 
 //     socket.on('createRoom', this.handleClientMessages.createRoom);
