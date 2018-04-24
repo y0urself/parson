@@ -40,18 +40,19 @@
                    socket.emit('collaborate',$('#form_collab').val().trim());
                 });
                 $('#eval').on('click', function(e) {
-                    var myInterpreter = new Interpreter($('#js_show').val(),
-                    function(interpreter, scope) {
-                      interpreter.setProperty(scope, 'js_input', String($('#js_input').val()));
-
-                      var wrapper = function(text) {
-                        return alert(text);
-                      };
-                      interpreter.setProperty(scope, 'alert',
-                          interpreter.createNativeFunction(wrapper));
-                    });
+//                     $('#js_eval').val(eval("var js_input="+$('#js_input').val()+";"+$('#js_show').val()))
+//                     return;
+                    var myInterpreter = new Interpreter("var js_input="+$('#js_input').val()+";"+$('#js_show').val());
+//                     ,
+//                     function(interpreter, scope) {
+//                       interpreter.setProperty(scope, 'js_input', String($('#js_input').val()));
+//                       var wrapper = function(text) {
+//                         return alert(text);
+//                       };
+//                       interpreter.setProperty(scope, 'alert',
+//                           interpreter.createNativeFunction(wrapper));
+//                     });
                     myInterpreter.run();
-                    $('#js_eval').val(myInterpreter.value)
                     $('#js_eval').val(myInterpreter.value)
                 });
                 if(localStorage.getItem("quizstate_"+quizID)!=undefined){

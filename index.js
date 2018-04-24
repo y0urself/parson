@@ -182,10 +182,8 @@ io.on('connection', function(socket) {
             if(socket.collab!=undefined) {
                 if(collab[socket.puzzle+"_"+socket.collab]!=undefined) {
                     var group = collab[socket.puzzle+"_"+socket.collab];
-                    for(var i in group) {
-                        console.log("Socket: ")
-                        console.log(io.sockets.sockets[group[i]]);
-                        var thisSocket=io.sockets.sockets[group[i]]
+                    for(var i in group.sockets) {
+                        var thisSocket=io.sockets.sockets[group.sockets[i]]
                         if(thisSocket!=undefined) {
                             thisSocket.emit('serialized',msg);
                         }else{
@@ -235,16 +233,24 @@ io.on('connection', function(socket) {
     });
 
     socket.on('collaborate', function(msg){
+        if(msg=='') {
+            if(socket.collab!=undefined && socket.puzzle!=undefined){
+                console.log("removing from colalblist"+socket.puzzle+"_"+socket.collab)
+                if(collab[socket.puzzle+"_"+socket.collab].sockets.includes(socket.id)){
+                    var idx=collab[socket.puzzle+"_"+socket.collab].sockets.indexOf(socket.id)
+                    collab[socket.puzzle+"_"+socket.collab].sockets.splice(idx,1)
+                }
+            }
+        }
         socket.collab=msg;
         if(socket.puzzle==undefined){
             console.log("Socket did not yet join a puzzle, ignoring")
         }
-        //TODO: Send last serialization
         if(collab[socket.puzzle+"_"+socket.collab]==undefined){
-            collab[socket.puzzle+"_"+socket.collab] = [socket.id];
+            collab[socket.puzzle+"_"+socket.collab] = {sockets:[socket.id], serialization:''};
         }else{
-            if(!collab[socket.puzzle+"_"+socket.collab].includes(socket.id))
-                collab[socket.puzzle+"_"+socket.collab].push(socket.id);
+            if(!collab[socket.puzzle+"_"+socket.collab].sockets.includes(socket.id))
+                collab[socket.puzzle+"_"+socket.collab].sockets.push(socket.id);
         }
     });
 
