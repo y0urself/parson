@@ -74,6 +74,7 @@
             });
             socket.on('state', function(a){
                 $('.jumbotron > h1').text(a.name)
+                $('#description').text(a.description)
                 window.parts=a.parts
                 window.js_input=a.js_input
                 $('#js_input').val(a.js_input)
@@ -178,7 +179,7 @@
 				Parson's Puzzles 
 			</h1>
 			<p>
-				Dies ist eine Liste der auf dem Server hinterlegten Puzzles 
+                <div id="description"></div>
 			</p>
 			<hr class="my-4"> 
 			<div class="row">
@@ -230,7 +231,7 @@
 						</label>
 						<input type="text" class="form-control" id="form_collab" aria-describedby="collabHelp" placeholder="Gruppen-ID">
 							<small id="collabHelp" class="form-text text-muted">
-								Eine Kollaborations-Gruppen-ID angeben 
+								Eine Kollaborations-Gruppen-ID angeben.
 							</small>
 						</div>
 						<a role="button" id="leave" class="btn float-right btn-info">

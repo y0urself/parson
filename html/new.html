@@ -100,6 +100,7 @@
                 var quiz={
                     qid:window.qid,
                     name:$('#form_title').val(),
+                    description:$('#form_description').val(),
                     parts:parts,
                     password:$('#form_password').val(),
                     js_input:$('#form_js_input').val(),
@@ -172,7 +173,16 @@
                     </label>
                     <input type="password" class="form-control" id="form_password" aria-describedby="passHelp" placeholder="Password">
                     <small id="passHelp" class="form-text text-muted">
-                        Ein Passwort, um später bearbeiten zu können
+                        Ein Passwort, um das Puzzle später bearbeiten zu können
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="form_description">
+                        Beschreibung
+                    </label>
+                    <input type="text" class="form-control" id="form_title" aria-describedby="nameHelp" placeholder="Beschreibung">
+                    <small id="nameHelp" class="form-text text-muted">
+                        Eine Beschreibung, Bitte
                     </small>
                 </div>
 <!-- 
