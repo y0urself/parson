@@ -175,7 +175,6 @@ io.on('connection', function(socket) {
             sendquiz.password=false;
             socket.emit('state',sendquiz);
             socket.puzzle=msg;
-            var col = new Colaboration(msg).add(socket);
         }
     });
     socket.on('serialized',function(msg){
