@@ -74,6 +74,7 @@
             });
             socket.on('state', function(a){
                 $('.jumbotron > h1').text(a.name)
+                $('#description').text(a.description)
                 window.parts=a.parts
                 window.js_input=a.js_input
                 $('#js_input').val(a.js_input)
@@ -178,7 +179,7 @@
                 Parson's Puzzles 
             </h1>
             <p>
-                Dies ist eine Liste der auf dem Server hinterlegten Puzzles 
+                <div id="description"></div>
             </p>
             <hr class="my-4"> 
             <div class="row">

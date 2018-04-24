@@ -199,7 +199,7 @@ io.on('connection', function(socket) {
     });
 
     socket.on('new',function(msg){
-        var q=new quiz(msg.name, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, passwordHash.generate(msg.password))
+        var q=new quiz(msg.name, msg.description, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, passwordHash.generate(msg.password))
         puzzles[q.id]=q
         socket.emit('redirect','/puzzles/'+q.id)
         dynamo.put();
