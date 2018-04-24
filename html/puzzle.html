@@ -19,6 +19,7 @@
         <link rel="stylesheet" href="/common.css" />
 		<script>
 		    var grid=40;
+		    var maxlevel=5;
             var url = window.location.pathname.split('/');
             var quizID = url[url.length-1];
 		    window.serialized='';
@@ -44,6 +45,11 @@
             var socket = io();
             socket.on('connect', function(a){
                 socket.emit('request',url[url.length-1])
+            });
+            socket.on('serialized', function(a){
+                $('#serialized').text(a)
+                window.serialized=a
+                render();
             });
             socket.on('state', function(a){
                 $('.jumbotron > h1').text(a.name)
@@ -79,39 +85,6 @@
                     serializeQuiz();
                 }});
                 $("#play").sortable({connectWith: "#bucket", stop:doLevel, receive:doLevel});
-            }
-            function doDraggable() {
-                $(".part").draggable({ cursor: "crosshair", revert: "invalid"});
-                
-                $("#play").droppable({ accept: ".part", drop: function(event, ui) {
-                        var dropped = ui.draggable;
-                        var droppedOn = $(this);
-                        var pos = ui.position.left;
-                        var curMargin=parseInt($(ui.draggable).css('margin-left'), 10)
-                        var newMargin=Math.round((pos+curMargin) / grid);
-                        newMargin=(newMargin>0?newMargin:0)
-                        $(ui.draggable).data('level',newMargin)
-                        $(ui.draggable).css('margin-left',newMargin * grid)
-                        $(dropped).detach().css({top: 0,left: 0}).appendTo(droppedOn);      
-                    },out: function(event, elem) {
-                        $(this).removeClass("over");
-                    }
-                });
-                $("#play").sortable();
-
-                $("#bucket").droppable({ accept: ".part", drop: function(event, ui) {
-                    var dropped = ui.draggable;
-                    var droppedOn = $(this);
-                    $(dropped).detach().css({top: 0,left: 0}).appendTo(droppedOn);      
-                }});
-                /* Geht nicht :(
-                $("body *").not("#play").droppable({ accept: ".part", drop: function(event, ui) {
-                        var dropped = ui.draggable;
-                        var droppedOn = $("#bucket");
-                        $(dropped).detach().css({top: 0,left: 0}).appendTo(droppedOn);  
-                    }
-                });
-                */
             }
             function serializeQuiz() {
                 var ids = [];
