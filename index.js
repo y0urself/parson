@@ -8,6 +8,7 @@ var mustacheExpress = require('mustache-express');
 const passwordHash = require('password-hash');
 
 const use_dynamo = process.env.DYNAMO === 'yes'
+const master_pw = process.env.MASTER_PW || false
 
 if(use_dynamo) {
     var AWS = require('aws-sdk');
@@ -207,8 +208,8 @@ io.on('connection', function(socket) {
 
     socket.on('edit',function(msg){
         if(puzzles[msg.qid]!=undefined) {
-            if(msg.password == 'my sup3r s3c4re? Master Password!' || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password,puzzles[msg.qid].password))){
-                var q=new quiz(msg.name, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, puzzles[msg.qid].password, msg.qid)
+            if((master_pw != false && msg.password == master_pw) || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password,puzzles[msg.qid].password))){
+                var q=new quiz(msg.name, msg.description, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, puzzles[msg.qid].password, msg.qid)
                 puzzles[q.id]=q
                 socket.emit('redirect','/puzzles/'+q.id)
                 dynamo.put();
@@ -221,7 +222,7 @@ io.on('connection', function(socket) {
 
     socket.on('delete',function(msg){
         if(puzzles[msg.qid]!=undefined) {
-            if(msg.password == 'my sup3r s3c4re? Master Password!' || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password,puzzles[msg.qid].password))){
+            if((master_pw != false && msg.password == master_pw) || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password,puzzles[msg.qid].password))){
                 delete puzzles[msg.qid]
                 dynamo.del(msg.qid)
                 socket.emit('alert','Erfolgreich gelöscht!')

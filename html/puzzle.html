@@ -73,6 +73,7 @@
                 render();
             });
             socket.on('state', function(a){
+                console.log(a)
                 $('.jumbotron > h1').text(a.name)
                 $('#description').text(a.description)
                 window.parts=a.parts
