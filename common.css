@@ -52,3 +52,8 @@
                 background-image: linear-gradient(to right, #efefef 1px, transparent 1px, transparent);
                 background-position: left 15px top;
             }
+
+            #warnings{
+                color:#ff1100;
+                font-style: bold;
+            }
