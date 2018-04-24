@@ -163,83 +163,95 @@
                 localStorage.setItem("quizstate_"+quizID, JSON.stringify(window.serialized))
             }
         </script>
-		<title>
-			Parson
-		</title>
-	</head>
+        <title>
+            Parson
+        </title>
+    </head>
  
 <body>
-	<div class="container">
-		<div class="jumbotron">
-			<a href="/puzzles">
-				Zurück
-			</a>
-			<h1>
-				Parson's Puzzles 
-			</h1>
-			<p>
-				Dies ist eine Liste der auf dem Server hinterlegten Puzzles 
-			</p>
-			<hr class="my-4"> 
-			<div class="row">
-				<div class="card d-block mx-auto">
-					<div class="cardcontainer">
-						<div id="bucket" class="cardd">
-						</div>
-						<div id="warnings">
-						</div>
-						<div id="play" class="cardd card2">
-						</div>
-						<div id="serialized" class="cardd card2">
-						</div>
-						<div id="js_part" class="cardd card2">
-							<textarea id="js_show" style="width:100%;height:150px;"></textarea> 
-							<input id="js_input">
-								<a role="button" class="btn float-right btn-info" id="eval">
-									Ausführen
-								</a>
-								<textarea id="js_eval" style="width:100%;height:150px;"></textarea> 
-							</div>
-						</div>
-					</div>
-				</div>
-				<a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/edit">
-					Bearbeiten
-				</a>
-				<a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/duplicate">
-					Duplizieren
-				</a>
-				<a role="button" class="btn float-right btn-secondary" href="{{urlprefix}}{{id}}/show">
-					Beamer-Modus
-				</a>
-				<div class="form-group">
-					<label for="form_reload">
-						Bekannte Lösung laden. 
-					</label>
-					<input type="text" class="form-control" id="form_reload" aria-describedby="reloadHelp" placeholder="Serialisierung eingeben">
-						<small id="reloadHelp" class="form-text text-muted">
-							Einen serialisierten Lösungs-String 
-						</small>
-					</div>
-					<a role="button" id="loadLsg" class="btn float-right btn-secondary">
-						Laden
-					</a>
-					<div class="form-group">
-						<label for="form_collab">
-							Collaborate-Gruppe. 
-						</label>
-						<input type="text" class="form-control" id="form_collab" aria-describedby="collabHelp" placeholder="Gruppen-ID">
-							<small id="collabHelp" class="form-text text-muted">
-								Eine Kollaborations-Gruppen-ID angeben 
-							</small>
-						</div>
-						<a role="button" id="leave" class="btn float-right btn-info">
-							Verlassen
-                        </a>
-                        <a role="button" id="collab" class="btn float-right btn-secondary">
-                            Beitreten
-                        </a>
-					</div>
-				</div>
-			</div>
-		</body>
+    <div class="container">
+        <div class="jumbotron">
+            <a href="/puzzles">
+                Zurück
+            </a>
+            <h1>
+                Parson's Puzzles 
+            </h1>
+            <p>
+                Dies ist eine Liste der auf dem Server hinterlegten Puzzles 
+            </p>
+            <hr class="my-4"> 
+            <div class="row">
+                <div class="card d-block mx-auto">
+                    <div class="cardcontainer">
+                        <div id="bucket" class="cardd">
+                        </div>
+                        <div id="warnings">
+                        </div>
+                        <div id="play" class="cardd card2">
+                        </div>
+                        <div id="serialized" class="cardd card2">
+                        </div>
+                        <div id="js_part" class="cardd card2">
+                            <div class="form-group">
+                                <label for="js_show">Javascript-Code</label>
+                                <textarea id="js_show" class="form-control" style="width:100%;height:150px;"></textarea> 
+                            </div>
+                            <div class="form-inline">
+                                <div class="form-group mb-4">
+                                    <input type="text" class="form-control" id="js_input" placeholder="Eingabe">
+                                </div>
+                                <div class="form-group mx-sm-3 mb-4">
+                                    <a role="button" class="btn float-right btn-info" id="eval">
+                                        Ausführen
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="js_eval">Ausgabe</label>
+                                <textarea class="form-control" id="js_eval" style="width:100%;height:150px;"></textarea> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/edit">
+                Bearbeiten
+            </a>
+            <a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/duplicate">
+                Duplizieren
+            </a>
+            <a role="button" class="btn float-right btn-secondary" href="{{urlprefix}}{{id}}/show">
+                Beamer-Modus
+            </a>
+            <div class="form-group">
+                <label for="form_reload">
+                    Bekannte Lösung laden. 
+                </label>
+                <input type="text" class="form-control" id="form_reload" aria-describedby="reloadHelp" placeholder="Serialisierung eingeben">
+                    <small id="reloadHelp" class="form-text text-muted">
+                        Einen serialisierten Lösungs-String 
+                    </small>
+                </div>
+                <a role="button" id="loadLsg" class="btn float-right btn-secondary">
+                    Laden
+                </a>
+                <div class="form-group">
+                    <label for="form_collab">
+                        Collaborate-Gruppe. 
+                    </label>
+                    <input type="text" class="form-control" id="form_collab" aria-describedby="collabHelp" placeholder="Gruppen-ID">
+                        <small id="collabHelp" class="form-text text-muted">
+                            Eine Kollaborations-Gruppen-ID angeben 
+                        </small>
+                    </div>
+                    <a role="button" id="leave" class="btn float-right btn-info">
+                        Verlassen
+                    </a>
+                    <a role="button" id="collab" class="btn float-right btn-secondary">
+                        Beitreten
+                    </a>
+                </div>
+            </div>
+        </div>
+    </body>
