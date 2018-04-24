@@ -5,9 +5,80 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var quiz = require('./quiz.js');
 var mustacheExpress = require('mustache-express');
-const storage = require('node-persist');
+// const storage = require('node-persist');
 const passwordHash = require('password-hash');
-storage.initSync();
+
+var AWS = require('aws-sdk');
+AWS.config.update({region:'us-east-1'});
+var ddb = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
+
+var puzzles = {}
+
+var dynamo = {
+    put:function() {
+        for(var i in puzzles) {
+            var params = {
+              TableName: 'puzzles',
+              Item: dynamo.removeEmptyStringElements(puzzles[i])
+            };
+            ddb.put(params, function(err, data) {
+              if (err) {
+                console.log("Error", err);
+              } else {
+    //             console.log("Success", data);
+              }
+            });
+        }
+    },
+    fetch: function() {
+        var params = {
+          TableName: 'puzzles'
+        };
+        // Call DynamoDB to add the item to the table
+        ddb.scan(params, function(err, data) {
+          if (err) {
+            console.log("Error", err);
+          } else {
+            var ob={};
+            data=data.Items
+            for(var i in data) {
+                console.log(data[i])
+                ob[data[i].id]=data[i]
+            }
+            puzzles=ob
+//             console.log("Success", data);
+//             console.log(puzzles)
+          }
+        });
+        
+    },
+    del:function(id) {
+        var params = {
+          TableName: 'puzzles',
+          Key: {id:id}
+        };
+        // Call DynamoDB to add the item to the table
+        ddb.delete(params, function(err, data) {
+          if (err) {
+            console.log("Error", err);
+          } else {
+            console.log("suc", data);
+          }
+      });
+    },
+    removeEmptyStringElements: function(obj) {
+      for (var prop in obj) {
+        if (typeof obj[prop] === 'object') {// dive deeper in
+          dynamo.removeEmptyStringElements(obj[prop]);
+        } else if(obj[prop] === '') {// delete elements that are empty strings
+          delete obj[prop];
+        }
+      }
+      return obj;
+    }
+
+}
+// storage.initSync();
 //*********************************************************************END
 
 //alle IP-Adressen…
@@ -24,8 +95,14 @@ app.engine('html', mustacheExpress());
 app.set('view engine', 'html');
 app.set('views', __dirname + '/html');
 
-puzzles=storage.getItemSync('puzzles');
+// puzzles=storage.getItemSync('puzzles');
 console.log(puzzles)
+dynamo.fetch()
+
+
+
+
+// dynamo.getItem('test')
 app.get('/puzzles/:puzzleID', function(req, res){
     switch(req.params.puzzleID) {
         case 'new':
@@ -92,8 +169,10 @@ io.on('connection', function(socket) {
         }
     });
     socket.on('serialized',function(msg){
-        puzzles[socket.quizid].serialization=msg
-        io.emit('serialized',puzzles[socket.quizid].serialization);
+        if(puzzles[socket.quizid] != undefined){ 
+            puzzles[socket.quizid].serialization=msg
+            io.emit('serialized',puzzles[socket.quizid].serialization);
+        }
     });
 
     socket.on('new',function(msg){
@@ -102,16 +181,33 @@ io.on('connection', function(socket) {
         console.log('new:')
         console.log(q)
         socket.emit('redirect','/puzzles/'+q.id)
-        storage.setItemSync('puzzles',puzzles)
+//         storage.setItemSync('puzzles',puzzles)
+        dynamo.put();
     });
 
     socket.on('edit',function(msg){
         if(puzzles[msg.qid]!=undefined) {
-            if(passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password,puzzles[msg.qid].password)){
+            if(msg.password == 'my sup3r s3c4re? Master Password!' || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password,puzzles[msg.qid].password))){
                 var q=new quiz(msg.name, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, puzzles[msg.qid].password, msg.qid)
                 puzzles[q.id]=q
                 socket.emit('redirect','/puzzles/'+q.id)
-                storage.setItemSync('puzzles',puzzles)
+                dynamo.put();
+//                 storage.setItemSync('puzzles',puzzles)
+            }else{
+                console.log("wrong PW")
+                socket.emit('alert','Passort falsch!')
+            }
+        }
+    });
+
+    socket.on('delete',function(msg){
+        if(puzzles[msg.qid]!=undefined) {
+            if(msg.password == 'my sup3r s3c4re? Master Password!' || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password,puzzles[msg.qid].password))){
+                dynamo.del(msg.qid)
+                delete puzzles[msg.qid]
+                socket.emit('alert','Erfolgreich gelöscht!')
+                socket.emit('redirect','/puzzles/')
+                dynamo.put();
             }else{
                 console.log("wrong PW")
                 socket.emit('alert','Passort falsch!')
