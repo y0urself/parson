@@ -10,7 +10,9 @@
             $('#form_js_input').val(a.js_input)
             $('#form_js_pre').val(a.js_pre)
             $('#form_js_suf').val(a.js_suf)
-
+            $('#disableCollab').prop("checked",(a.disableCollab===true))
+            $('#disableJS').prop("checked",(a.disableJS===true))
+            $('#hidePuzzle').prop("checked",(a.hidePuzzle===true))
         });
         
         var url = window.location.pathname.split('/');
@@ -66,6 +68,27 @@
             $("#single-tab").on('click',function(e){
                 areaToSingle();
             });
+            $("body").on('click','.form_duplicate',function(e){
+                var row = $(this).closest('.form_row');
+                var html = $(row).get(0).outerHTML
+                var added=$(html).insertAfter(row);
+                var oldID=$(row).find('.form_id').first().val()
+
+                var newID=oldID.replace(/[a-z]/gi, function (x) {
+                                            var cc=x.charCodeAt()
+                                            if(cc>=65&&cc<=90)
+                                                cc=((cc-65)+1)%26+65
+                                            if(cc>=97&&cc<=122)
+                                                cc=((cc-97)+1)%26+97
+                                            return String.fromCharCode(cc)
+                                        });
+                var oldName=$(row).find('.form_name').first().val()
+                var oldJS=$(row).find('.form_js').first().val()
+                $(added).find('.form_id').first().val(newID)
+                $(added).find('.form_name').first().val(oldName)
+                $(added).find('.form_js').first().val(oldJS)
+                
+            });
             $("#form_add").on('click',function(e){
                 if($('#form_codearea').val().trim()!=''){
                     areaToSingle()
@@ -88,7 +111,10 @@
                     password:$('#form_password').val(),
                     js_input:$('#form_js_input').val(),
                     js_pre:$('#form_js_pre').val(),
-                    js_suf:$('#form_js_suf').val()
+                    js_suf:$('#form_js_suf').val(),
+                    disableCollab:$('#disableCollab').val(),
+                    disableJS:$('#disableJS').val(),
+                    hidePuzzle:$('#hidePuzzle').val()
                 };
                 if($('#deletePuzzle').is(':checked')) {
                     socket.emit('delete',quiz);
@@ -99,6 +125,7 @@
                 e.preventDefault();
                 return false;
             });
+            
         });
         function areaToSingle() {
             var arrays=$('#form_codearea').val().split("\n")
@@ -114,7 +141,7 @@
                     }
                 }else{
                     $('.form_name').eq(k).val(arrays[k].trim())
-                    $('.form_id').eq(k).val('A'+k)
+                    $('.form_id').eq(k).val(''+(k+1)+'A')
                 }
                 checkAppend()
             }
@@ -125,7 +152,10 @@
             Parson
         </title>
     </head>
- 
+    <style type="text/css">
+        .puzzletable input {margin: 0; width: 100%;}
+        .puzzletable td {margin: 0; padding: 0;}
+    </style>
 <body>
     {{>fancy_alert}}
     <div class="container">
@@ -158,6 +188,38 @@
                     </small>
                 </div>
                 <div class="form-group">
+                    <div class="form-check">
+                        <label class="form-check-label" for="deletePuzzle">
+                            <input class="form-check-input" type="checkbox" value="" id="deletePuzzle">
+                            Puzzle löschen?
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        <label class="form-check-label" for="hidePuzzle">
+                            <input class="form-check-input" type="checkbox" value="" id="hidePuzzle">
+                            Puzzle versteckt erstellen?
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        <label class="form-check-label" for="disableJS">
+                            <input class="form-check-input" type="checkbox" value="" id="disableJS">
+                            Javascript-Funktionalität verstecken?
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        <label class="form-check-label" for="disableCollab">
+                            <input class="form-check-input" type="checkbox" value="" id="disableCollab">
+                            Kollaborations-Funktionalität verstecken?
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="form_description">
                         Beschreibung
                     </label>
@@ -166,24 +228,6 @@
                         Eine Beschreibung, Bitte
                     </small>
                 </div>
-<!-- 
-                <div class="form-group">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="enableJS">
-                        <label class="form-check-label" for="enableJS">
-                            Javascript Aktivieren?
-                        </label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="enableCollab">
-                        <label class="form-check-label" for="enableCollab">
-                            Kollaboration aktivieren?
-                        </label>
-                    </div>
-                </div>
- -->
                 <div class="form-group">
                     <label for="form_js_input">
                         Javascript-Eingabe
@@ -221,24 +265,29 @@
                         <a class="nav-link" id="multiple-tab" data-toggle="tab" href="#multiple" role="tab" aria-controls="multiple" aria-selected="false">Gesamt-Eingabe</a>
                       </li>
                     </ul>
-                    
-                    
-                    
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
-                            <div class="row form_row">
-                                <div class="col">
-                                    <input type="text" class="form-control form_id" placeholder="Bezeichner">
-                                </div>
-                                <div class="col">
-                                    <input type="text" class="form-control form_name" placeholder="Programmcode">
-                                </div>
-                                <div class="col">
-                                    <input type="text" class="form-control form_js" placeholder="Javascript-Equivalent">
-                                </div>
-                            </div>
-                        </div>
-                        
+                            <table class="table table-bordered table-condensed puzzletable">
+                                <tbody>
+                                    <tr class="form_row">
+                                    <td>
+                                        <input type="text" class="form-control form_id" placeholder="Bezeichner">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control form_name" placeholder="Programmcode">
+                                    </td>
+                                    <td>
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control form_js" placeholder="Javascript-Equivalent">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary form_duplicate" type="button">Duplizieren</button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>                        
                         <div class="tab-pane fade" id="multiple" role="tabpanel" aria-labelledby="multiple-tab">
                             <div class="form-group">
                                 <label for="form_codearea">
@@ -248,18 +297,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="deletePuzzle">
-                            <label class="form-check-label" for="deletePuzzle">
-                                Puzzle löschen?
-                            </label>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" id="form_add">
-                        Submit
-                    </button>
                 </div>
+
+                <button class="btn btn-primary" id="form_add">
+                    Submit
+                </button>
             </form>
         </div>
     </div>
