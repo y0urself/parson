@@ -1,7 +1,8 @@
 <html>
     <head>
         {{>html_head_top}}
-        <script src="/acorn_interpreter.js"></script>        
+        <script src="/acorn_interpreter.js"></script>
+
         <script>
             var grid=40;
             var maxlevel=10;
@@ -68,6 +69,13 @@
                 $('#js_input').val(a.js_input)
                 window.js_pre=a.js_pre
                 window.js_suf=a.js_suf
+
+                if((a.disableCollab===true)){
+                    $('.form_group_collab').hide()
+                }
+                if((a.disableJS===true)){
+                    $('#js_part').hide()
+                }
                 ParsonAPP.render()
                 ParsonAPP.serializeQuiz()
                 ParsonAPP.doNewDraggable();
@@ -150,7 +158,7 @@
                 <a role="button" id="loadLsg" class="btn float-right btn-secondary">
                     Laden
                 </a>
-                <div class="form-group">
+                <div class="form-group form_group_collab">
                     <label for="form_collab">
                         Collaborate-Gruppe. 
                     </label>

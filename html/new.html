@@ -89,6 +89,24 @@
                 $(added).find('.form_js').first().val(oldJS)
                 
             });
+            $("#form_shuffle").on('click',function(e){
+                if(url[url.length-1]=='edit'){
+                    if(!window.confirm("Achtung! Wenn Nutzer das Quiz schon mal bearbeitet haben, macht das 'mischen' ihre Lösung komplett kaputt, da die IDs neu zu Codezeilen zugeordnet werden. Trotzdem mischen?"))
+                        return false;
+                }
+                var $firstCells = $(".puzzletable:eq(0) tr td:first-child"),
+                    $copies = $firstCells.clone(true);
+
+                $copies=$copies.not(":last");
+
+                [].sort.call($copies, function() { return Math.random() - 0.5; });
+
+                $copies.each(function(i){
+                    $firstCells.eq(i).replaceWith(this);
+                });
+                e.preventDefault();
+                return false;
+            });
             $("#form_add").on('click',function(e){
                 if($('#form_codearea').val().trim()!=''){
                     areaToSingle()
@@ -112,16 +130,15 @@
                     js_input:$('#form_js_input').val(),
                     js_pre:$('#form_js_pre').val(),
                     js_suf:$('#form_js_suf').val(),
-                    disableCollab:$('#disableCollab').val(),
-                    disableJS:$('#disableJS').val(),
-                    hidePuzzle:$('#hidePuzzle').val()
+                    disableCollab:$('#disableCollab').is(':checked'),
+                    disableJS:$('#disableJS').is(':checked'),
+                    hidePuzzle:$('#hidePuzzle').is(':checked')
                 };
                 if($('#deletePuzzle').is(':checked')) {
                     socket.emit('delete',quiz);
                 }else{
                     socket.emit((window.qid==false ? 'new' : 'edit'),quiz);
                 }
-                console.log("asd")
                 e.preventDefault();
                 return false;
             });
@@ -199,7 +216,7 @@
                     <div class="form-check">
                         <label class="form-check-label" for="hidePuzzle">
                             <input class="form-check-input" type="checkbox" value="" id="hidePuzzle">
-                            Puzzle versteckt erstellen?
+                            Puzzle in der Liste/Startseite verstecken?
                         </label>
                     </div>
                 </div>
@@ -287,6 +304,9 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            <a class="btn btn-secondary" id="form_shuffle">
+                                Zeilen zufällig Anordnen
+                            </a>
                         </div>                        
                         <div class="tab-pane fade" id="multiple" role="tabpanel" aria-labelledby="multiple-tab">
                             <div class="form-group">
@@ -299,7 +319,7 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary" id="form_add">
+                <button type=submit class="btn btn-primary" id="form_add">
                     Submit
                 </button>
             </form>
