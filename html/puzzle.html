@@ -8,6 +8,7 @@
             var url = window.location.pathname.split('/');
             var quizID = url[url.length-1];
             window.serialized='';
+            window.loadedfromstorage=false
             function joinCollab(){
                 var collabGroup=$('#form_collab').val().trim()
                 socket.emit('collaborate',collabGroup);
@@ -32,15 +33,21 @@
                     myInterpreter.run();
                     $('#js_eval').val(myInterpreter.value)
                 });
-                if(localStorage.getItem("quizstate_"+quizID)!=undefined){
-                    window.serialized=JSON.parse(localStorage.getItem("quizstate_"+quizID))
-                    $('#serialized').text(window.serialized)
-                }
-                if(localStorage.getItem("collaborate_"+quizID)!=undefined){
-                    $('#form_collab').val(localStorage.getItem("collaborate_"+quizID))
-                    joinCollab()
-                }
             });
+            
+            function loadFromStorage() {
+                if(!window.loadedfromstorage){
+                    if(localStorage.getItem("quizstate_"+quizID)!=undefined){
+                        window.serialized=JSON.parse(localStorage.getItem("quizstate_"+quizID))
+                        $('#serialized').text(window.serialized)
+                    }
+                    if(localStorage.getItem("collaborate_"+quizID)!=undefined){
+                        $('#form_collab').val(localStorage.getItem("collaborate_"+quizID))
+                        joinCollab()
+                    }
+                }
+                window.loadedfromstorage=true;
+            }
             socket.on('connect', function(a){
                 socket.emit('request',url[url.length-1])
             });
@@ -53,7 +60,7 @@
                 ParsonAPP.render();
             });
             socket.on('state', function(a){
-                console.log(a)
+                loadFromStorage()
                 $('.jumbotron > h1').text(a.name)
                 $('#description').text(a.description)
                 window.parts=a.parts
