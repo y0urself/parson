@@ -186,19 +186,21 @@ app.get(['/puzzles/:puzzleID/edit', '/puzzles/:puzzleID/duplicate'], function(re
 });
 app.get(['/puzzles/:puzzleID/tex'], function(req, res) {
     var puzzle=getPuzzlePublic(puzzles[req.params.puzzleID]);
-    var newparts=[];
     var partstring="";
     var i = 0;
     var keys = Object.keys(puzzle.parts);
-    console.log(puzzle.parts);
-    while(i < puzzle.parts.length){
+    while(i < keys.length){
     	var k=keys[i];
-        partstring+="\\ppart{"+k+"}{"+puzzle.parts[k].name+"} &";
-    	k=keys[i+1];
-    	partstring+="\\ppart{"+k+"}{"+puzzle.parts[k].name+"} \\\\[10pt]";
-    	i = i + 2;
+        if((i+1)<keys.length && puzzle.parts[k].name.length<=30 && puzzle.parts[keys[i+1]].name.length<=30){
+            partstring+="            \\ppart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} &";
+            k=keys[i+1];
+            partstring+="            \\ppart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} \\\\[10pt]\n";
+            i = i + 2;
+    	}else{
+            partstring+="            \\multicolumn{2}{l}{\\dpart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} }\\\\[10pt]\n";
+            i++;
+    	}
     }
-    console.log(partstring);
     puzzle.parts=partstring;
     res.send(
         mustache.render(texTemplate,
