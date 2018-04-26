@@ -140,7 +140,7 @@ fs.readFile(__dirname + '/tex/test.tex', function(err, data) {
         throw err;
     }
     texTemplate = data.toString();
-    mustache.parse(texTemplate, ['⏞', '⏟']);
+    mustache.parse(texTemplate, ['<<<', '>>>']);
 });
 
 
@@ -187,10 +187,11 @@ app.get(['/puzzles/:puzzleID/edit', '/puzzles/:puzzleID/duplicate'], function(re
 app.get(['/puzzles/:puzzleID/tex'], function(req, res) {
     var puzzle=getPuzzlePublic(puzzles[req.params.puzzleID]);
     var newparts=[];
+    var partstring="";
     for(var k in puzzle.parts) {
-        newparts.push({partid:k, partname:puzzle.parts[k].name});
+        partstring+='LOL'
     }
-    puzzle.parts=newparts
+    puzzle.parts=partstring
     res.send(
         mustache.render(texTemplate,
             puzzle

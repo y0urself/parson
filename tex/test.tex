@@ -34,12 +34,15 @@
 \usepackage{geometry}
 \geometry{a4paper, top=25mm, left=25mm, right=25mm, bottom=13mm, headsep=4mm, footskip=4mm}
 
+
+\begin{document}
 \begin{figure}[h!]
 		\centering
-		\begin{tabular}{ll}
-			<<<#parts>>>
-			\ppart{partid}{partname} &
-			<<<#parts>>>
+		\begin{tabular}{l}
+%			<<<#parts>>>
+%			\ppart{<<<{partid}>>>}{<<<{partname}>>>} \\[10pt]
+%			<<</parts>>>
+            <<<{parts}>>>
 		\end{tabular}
 \end{figure}
 
