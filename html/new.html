@@ -89,6 +89,9 @@
             $("#single-tab").on('click',function(e){
                 areaToSingle();
             });
+            $("#multiple-tab").on('click',function(e){
+                singleToArea();
+            });
             $("#form_duplicate_all").on('click',function(e){
                 $.each($('.form_row:not(:last)'),function(k,v) {
                     duplicateRow(v);
@@ -197,34 +200,30 @@
                 checkAppend()
                 i++;
             }
-            $('#form_codearea').val('');
-        }
-        
-        /*
-        function areaToSingle() {
-            var arrays=$('#form_codearea').val().split("\n")
-            shuffleArray(arrays);
-            var i=0;
-            for(var k in arrays) {
-                var val=arrays[k].trim();
-                if(val=='') continue
-                vals=val.split('|');
-                if(vals.length>1) {
-                    $('.form_name').eq(i).val(vals[1])
-                    $('.form_id').eq(i).val(vals[0])
-                    if(vals.length>2) {
-                        $('.form_js').eq(i).val(vals[2])
-                    }
-                }else{
-                    $('.form_name').eq(i).val(arrays[k].trim())
-                    $('.form_id').eq(i).val(''+(parseInt(i)+1)+'A')
-                }
-                checkAppend()
-                i++;
+            console.log($(".form_row").length + "   " + i);
+            while(i < $(".form_row").length - 1){
+            	$(".form_row").eq(i).remove();
+            	i++;
             }
             $('#form_codearea').val('');
         }
-        */
+        
+        function singleToArea() {
+        	var len=$(".form_row").length
+            var i=0;
+            var input = "";
+            while(i<len-1) {
+            	console.log($('.form_id').eq(i).val());
+                var key = $('.form_id').eq(i).val() || "";
+                var name = $('.form_name').eq(i).val() || "";
+                var js = $('.form_js').eq(i).val() || "";
+                input += key + "|" + name + "|" + js + "\n";
+                i++
+            }
+        
+        	$('#form_codearea').val(input);
+        }
+        
         
         </script>
                 <title>
