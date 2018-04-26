@@ -1,21 +1,22 @@
 \documentclass{report}
+\usepackage[utf8]{inputenc}
 \usepackage[many]{tcolorbox}
 \usepackage{tikz}
 \newtcbox{\parsonbox}[2]{
     enhanced,
     nobeforeafter,
     tcbox raise base,
-    boxrule=0.4pt,
+    boxrule=0.9pt,
     top=0mm,
     bottom=0mm,
     right=0mm,
     left=#1,
     arc=2pt,
-    boxsep=2pt,
+    boxsep=6pt,
     before upper={\vphantom{dlg}},
     colframe=black,
     coltext=black,
-    colback=lightgray,
+    %colback=lightgray,
     overlay={
         \begin{tcbclipinterior}
         \fill[black]
@@ -28,20 +29,18 @@
         \end{tcbclipinterior}
     }
 }
-    
-    
+\newcommand{\ppart}[2]{\parsonbox{12mm}{\large #1}{\makebox[0.35\linewidth][l]{\texttt{\large#2}}}}
 
-\begin{document}
+\usepackage{geometry}
+\geometry{a4paper, top=25mm, left=25mm, right=25mm, bottom=13mm, headsep=4mm, footskip=4mm}
 
+\begin{figure}[h!]
+		\centering
+		\begin{tabular}{ll}
+			<<<#parts>>>
+			\ppart{partid}{partname} &
+			<<<#parts>>>
+		\end{tabular}
+\end{figure}
 
-
-\begin{tabular}{ll}
-\hline
-\parsonbox{6mm}{asd}{\makebox[0.5\linewidth][l]{asd}} & \parsonbox{6mm}{asd}{\makebox[0.5\linewidth][l]{asd}} \\
-\hline
-\multicolumn{2}{l}{
-\parsonbox{6mm}{lol}{\makebox[\linewidth][l]{asd}}
-}\\
-\hline
-\end{tabular}
 \end{document}
