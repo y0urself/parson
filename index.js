@@ -188,10 +188,18 @@ app.get(['/puzzles/:puzzleID/tex'], function(req, res) {
     var puzzle=getPuzzlePublic(puzzles[req.params.puzzleID]);
     var newparts=[];
     var partstring="";
-    for(var k in puzzle.parts) {
-        partstring+='LOL'
+    var i = 0;
+    var keys = Object.keys(puzzle.parts);
+    console.log(puzzle.parts);
+    while(i < puzzle.parts.length){
+    	var k=keys[i];
+        partstring+="\\ppart{"+k+"}{"+puzzle.parts[k].name+"} &";
+    	k=keys[i+1];
+    	partstring+="\\ppart{"+k+"}{"+puzzle.parts[k].name+"} \\\\[10pt]";
+    	i = i + 2;
     }
-    puzzle.parts=partstring
+    console.log(partstring);
+    puzzle.parts=partstring;
     res.send(
         mustache.render(texTemplate,
             puzzle
