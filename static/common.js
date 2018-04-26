@@ -68,13 +68,13 @@ ParsonAPP.render = function() {
     console.log(bucketParts)
     var bucketHTML = ''
     for (var k in bucketParts) {
-        bucketHTML += '<div class=part data-id=' + k + '><div class=identifier>' + k + '</div><div class=title>' + bucketParts[k].name + '</div></div>';
+        bucketHTML += '<div class=part data-id=' + k + '><div class=identifier>' + k + '</div><div class="title monotextarea">' + bucketParts[k].name + '</div></div>';
     }
     $('#bucket').html(bucketHTML);
 
     var playHTML = ''
     for (var k in playParts) {
-        playHTML += '<div class=part data-id="' + k + '" data-level="' + playParts[k].level + '"><div class=identifier>' + k + '</div><div class=title>' + playParts[k].name + '</div></div>';
+        playHTML += '<div class=part data-id="' + k + '" data-level="' + playParts[k].level + '"><div class=identifier>' + k + '</div><div class="title monotextarea">' + playParts[k].name + '</div></div>';
     }
     $('#play').html(playHTML);
     ParsonAPP.renderLevel()
