@@ -50,6 +50,7 @@ function loadFromStorage() {
     if (!window.loadedfromstorage) {
         if (localStorage.getItem("quizstate_" + quizID) != undefined) {
             window.serialized = JSON.parse(localStorage.getItem("quizstate_" + quizID))
+            $('#form_reload').val(window.serialized)
             $('#serialized').text(window.serialized)
         }
         if (localStorage.getItem("collaborate_" + quizID) != undefined) {
