@@ -46,6 +46,8 @@ $(document).ready(function() {
     });
 });
 
+
+
 function loadFromStorage() {
     if (!window.loadedfromstorage) {
         if (localStorage.getItem("quizstate_" + quizID) != undefined) {
@@ -59,6 +61,39 @@ function loadFromStorage() {
         }
     }
     window.loadedfromstorage = true;
+}
+
+
+
+ParsonAPP.undo = function() {
+    if(ParsonAPP.undoHistory.length>1){
+        window.serialized=ParsonAPP.undoHistory[ParsonAPP.undoHistory.length-2]
+        ParsonAPP.redoHistory.push(window.serialized)
+        ParsonAPP.undoHistory.splice(-1,1)
+        $('#form_reload').val(window.serialized)
+        $('#serialized').text(window.serialized)
+        ParsonAPP.render()
+    }
+}
+ParsonAPP.redo = function() {
+    if(ParsonAPP.redoHistory.length>0){
+        window.serialized=ParsonAPP.redoHistory[ParsonAPP.redoHistory.length-1]
+        ParsonAPP.undoHistory.push(window.serialized)
+        ParsonAPP.redoHistory.splice(-1,1)
+        $('#form_reload').val(window.serialized)
+        $('#serialized').text(window.serialized)
+        ParsonAPP.render()
+    }
+}
+
+document.onkeydown = function(e) {
+    e = e || window.event;
+    if (e.keyCode == '37') {
+       ParsonAPP.undo()
+    }
+    else if (e.keyCode == '39') {
+       ParsonAPP.redo()
+    }
 }
 socket.on('connect', function(a) {
     socket.emit('request', url[url.length - 1])

@@ -26,6 +26,8 @@ function fancyAlert(a) {
 }
 socket.on('alert', fancyAlert);
 
+ParsonAPP.undoHistory=[];
+ParsonAPP.redoHistory=[];
 
 ParsonAPP.render = function() {
     var bucketParts = {};
@@ -107,6 +109,7 @@ ParsonAPP.doLevel = function(event, ui) {
 
 
 
+
 ParsonAPP.serializeQuiz = function() {
     var ids = [];
     var lastLevel = 0;
@@ -132,6 +135,7 @@ ParsonAPP.serializeQuiz = function() {
     js += Array(lastLevel + 1).join("}");
     js += ';' + window.js_suf;
     $('#serialized').text(lii);
+    ParsonAPP.undoHistory.push(lii);
     $('#js_show').val(js_beautify(js));
 
     ids.sort();
