@@ -5,6 +5,7 @@ ParsonAPP.loadedfromstorage = false
 ParsonAPP.quizID = url[url.length - 1];
 ParsonAPP.undoHistory = [];
 ParsonAPP.redoHistory = [];
+ParsonAPP.serialized='';
 ParsonAPP.render = function() {
     var bucketParts = {};
     var playParts = []
@@ -291,7 +292,13 @@ $(document).ready(function() {
             interpreter.setProperty(scope, 'print', interpreter.createNativeFunction(print));
         };
         var myInterpreter = new Interpreter("var js_input=" + $('#js_input').val() + ";" + $('#js_show').val(), initFunc);
-        myInterpreter.run();
+//         myInterpreter.run();
+        function nextStep() {
+          if (myInterpreter.step()) {
+            window.setTimeout(nextStep, 500);
+          }
+        }
+        nextStep();
         $('#js_eval').val(myInterpreter.value)
     });
 });
