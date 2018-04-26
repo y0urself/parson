@@ -5,7 +5,7 @@ ParsonAPP.loadedfromstorage = false
 ParsonAPP.quizID = url[url.length - 1];
 ParsonAPP.undoHistory = [];
 ParsonAPP.redoHistory = [];
-ParsonAPP.serialized='';
+ParsonAPP.serialized = '';
 ParsonAPP.render = function() {
     var bucketParts = {};
     var playParts = []
@@ -169,7 +169,7 @@ ParsonAPP.loadFromStorage = function() {
         }
         if (localStorage.getItem("collaborate_" + ParsonAPP.quizID) != undefined) {
             $('#form_collab').val(localStorage.getItem("collaborate_" + ParsonAPP.quizID))
-            joinCollab()
+            ParsonAPP.joinCollab()
         }
     }
     ParsonAPP.loadedfromstorage = true;
@@ -186,13 +186,21 @@ ParsonAPP.redo = function() {
         ParsonAPP.setSerialized(ParsonAPP.redoHistory.pop())
     }
 }
-ParsonAPP.setSerialized = function(serialized) {
+ParsonAPP.setSerialized = function(serialized, send) {
     ParsonAPP.serialized = serialized
-    socket.emit('serialized', serialized);
+    if (send == undefined || send != false) {
+        socket.emit('serialized', serialized);
+    }
     localStorage.setItem("quizstate_" + ParsonAPP.quizID, JSON.stringify(ParsonAPP.serialized))
     $('#form_reload').val(ParsonAPP.serialized)
     $('#serialized').text(ParsonAPP.serialized)
     ParsonAPP.render()
+}
+
+ParsonAPP.joinCollab = function() {
+    var collabGroup = $('#form_collab').val().trim()
+    socket.emit('collaborate', collabGroup);
+    localStorage.setItem("collaborate_" + ParsonAPP.quizID, $('#form_collab').val().trim())
 }
 ParsonAPP.sockethandlers = {
     connect: function(msg) {
@@ -222,7 +230,7 @@ ParsonAPP.sockethandlers = {
         ParsonAPP.serializeQuiz()
     },
     serialized: function(msg) {
-        ParsonAPP.setSerialized(msg)
+        ParsonAPP.setSerialized(msg, false)
     }
 }
 
@@ -249,11 +257,7 @@ document.onkeydown = function(e) {
 
 
 
-function joinCollab() {
-    var collabGroup = $('#form_collab').val().trim()
-    socket.emit('collaborate', collabGroup);
-    localStorage.setItem("collaborate_" + quizID, $('#form_collab').val().trim())
-}
+
 
 // function createPDF() {
 //     $.get('./'+quizID+'/tex', function(data) {
@@ -278,27 +282,44 @@ $(document).ready(function() {
         ParsonAPP.render()
         ParsonAPP.serializeQuiz()
     });
-    $('#collab').on('click', joinCollab);
+    $('#collab').on('click', ParsonAPP.joinCollab);
     //     $('#createPDF').on('click', createPDF);
     $('#leave').on('click', function(e) {
         $('#form_collab').val("");
-        joinCollab()
+        ParsonAPP.joinCollab()
     });
     $('#eval').on('click', function(e) {
         var initFunc = function(interpreter, scope) {
             var print = function(text) {
-                $('#js_eval').val($('#js_eval').val() + text)
+                $('#js_eval').val($('#js_eval').val() + text + "\n")
+//                 var $textarea = $('#js_eval');
+//                 $textarea.scrollTop($textarea[0].scrollHeight);
             };
             interpreter.setProperty(scope, 'print', interpreter.createNativeFunction(print));
         };
+        if(ParsonAPP.stepper!==undefined){
+            window.clearTimeout(ParsonAPP.stepper)
+            $('#js_eval').val($('#js_eval').val() + "---------------\nAborted by user after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
+            delete ParsonAPP.stepper
+        }
         var myInterpreter = new Interpreter("var js_input=" + $('#js_input').val() + ";" + $('#js_show').val(), initFunc);
-//         myInterpreter.run();
+        window.steps = 0
+        window.startrun = Date.now()
+
         function nextStep() {
-          if (myInterpreter.step()) {
-            window.setTimeout(nextStep, 500);
-          }
+            try{
+                if (myInterpreter.step()) {
+                    $('#js_steps').val(window.steps++);
+                    ParsonAPP.stepper=window.setTimeout(nextStep, 1);
+                } else {
+                    $('#js_eval').val($('#js_eval').val() + "---------------\nFinished in " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
+                    delete ParsonAPP.stepper
+                }
+            }catch(err){
+                    delete ParsonAPP.stepper
+                    $('#js_eval').val($('#js_eval').val() + "---------------\nAborted after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n"+JSON.stringify(err.message)+"\n---------------\n")
+            }
         }
         nextStep();
-        $('#js_eval').val(myInterpreter.value)
     });
 });
