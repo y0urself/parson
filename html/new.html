@@ -122,7 +122,8 @@
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
                         	Manuelle Eingabe von Parson-Teilen
-                            <table class="table table-bordered table-condensed puzzletable">
+                            <!--
+                            <table class="table table-bordered table-condensed parts_table" id="part_table">
                                 <tbody>
                                     <tr class="form_row">
                                     <td>
@@ -132,17 +133,38 @@
                                         <input type="text" class="form-control form_name" placeholder="Programmcode">
                                     </td>
                                     <td>
-                                        <div class="input-group mb-3">
-                                            <input type="text" class="form-control form_js" placeholder="Javascript-Equivalent">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-outline-secondary form_duplicate" type="button">Duplizieren</button>
-                                                <button class="btn btn-outline-secondary form_delete" type="button">Löschen</button>
-                                            </div>
-                                        </div>
+									<div class="input-group mb-3">
+										<input type="text" class="form-control form_js monotextarea" placeholder="Javascript-Equivalent">
+										<div class="input-group-append">
+											<button class="btn btn-outline-secondary form_duplicate" type="button">Duplizieren</button>
+											<button class="btn btn-outline-secondary form_delete" type="button">Löschen</button>
+										</div>
+									</div>
                                     </td>
                                     </tr>
                                 </tbody>
                             </table>
+                             -->
+                             
+							<div id="parts_table" >
+								<div class="row form_row">
+									<div class="col">
+										  <input type="text" class="form-control form_id" placeholder="Bezeichner">
+									</div>
+									<div class="col">
+										  <input type="text" class="form-control form_name" placeholder="Programmcode">
+									</div>
+									<div class="col-6">
+										<div class="input-group mb-3">
+												<input type="text" class="form-control form_js monotextarea" placeholder="Javascript-Equivalent">
+											<div class="input-group-append">
+													<button class="btn btn-outline-secondary form_duplicate" type="button">Duplizieren</button>
+													<button class="btn btn-outline-secondary form_delete" type="button">Löschen</button>
+										  	</div>
+										</div>
+									</div>
+								</div>
+							</div>
                             <a class="btn btn-secondary" id="form_shuffle">
                                 Bezeichner zufällig neu vergeben
                             </a>
@@ -153,6 +175,9 @@
                             <a class="btn btn-secondary" id="form_sort">
                                 Zeilen nach Bezeichner sortieren
                             </a>
+                            <small id="single" class="form-text text-muted">
+                        			Listenelemente können per Drag and Drop verschoben werden.
+                    		</small>
                         </div>                        
                         <div class="tab-pane fade" id="multiple" role="tabpanel" aria-labelledby="multiple-tab">
                             <div class="form-group">

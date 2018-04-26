@@ -49,6 +49,10 @@ jQuery.fn.extend({
     }
 });
 
+// $(function(){
+//     	$("#parts_table").sortable();
+// });
+
 function checkAppend() {
     var empty = false;
     $.each($(".form_row"), function(k, v) {
@@ -171,7 +175,6 @@ $(document).ready(function() {
         e.preventDefault();
         return false;
     });
-
 });
 
 function shuffleArray(array) {
