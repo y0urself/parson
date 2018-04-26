@@ -49,9 +49,9 @@ jQuery.fn.extend({
     }
 });
 
-// $(function(){
-//     	$("#parts_table").sortable();
-// });
+$(function(){
+    	$("#parts_table").sortable();
+});
 
 function checkAppend() {
     var empty = false;
