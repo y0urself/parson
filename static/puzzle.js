@@ -10,6 +10,20 @@ function joinCollab() {
     socket.emit('collaborate', collabGroup);
     localStorage.setItem("collaborate_" + quizID, $('#form_collab').val().trim())
 }
+
+// function createPDF() {
+//     $.get('./'+quizID+'/tex', function(data) {
+//         var pdftex = new PDFTeX('/tex/pdftex-worker.js');
+//         pdftex.set_TOTAL_MEMORY(1000000).then(function(){
+//             var latex_code = data
+//     //         pdftex.set_TOTAL_MEMORY(250000)
+//             pdftex.compile(latex_code)
+//                 .then(function(pdf) {
+//                     window.open(pdf)
+//                 });
+//         });
+//     });
+// }
 $(document).ready(function() {
     $(document).bind('touchmove', function(e) {
         e.preventDefault();
@@ -20,6 +34,7 @@ $(document).ready(function() {
         ParsonAPP.serializeQuiz()
     });
     $('#collab').on('click', joinCollab);
+    $('#createPDF').on('click', createPDF);
     $('#leave').on('click', function(e) {
         $('#form_collab').val("");
         joinCollab()
