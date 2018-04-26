@@ -300,6 +300,7 @@ $(document).ready(function() {
         if(ParsonAPP.stepper!==undefined){
             window.clearTimeout(ParsonAPP.stepper)
             $('#js_eval').val($('#js_eval').val() + "---------------\nAborted by user after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
+            delete ParsonAPP.stepper
         }
         var myInterpreter = new Interpreter("var js_input=" + $('#js_input').val() + ";" + $('#js_show').val(), initFunc);
         window.steps = 0
@@ -312,8 +313,10 @@ $(document).ready(function() {
                     ParsonAPP.stepper=window.setTimeout(nextStep, 1);
                 } else {
                     $('#js_eval').val($('#js_eval').val() + "---------------\nFinished in " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
+                    delete ParsonAPP.stepper
                 }
             }catch(err){
+                    delete ParsonAPP.stepper
                     $('#js_eval').val($('#js_eval').val() + "---------------\nAborted after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n"+JSON.stringify(err.message)+"\n---------------\n")
             }
         }
