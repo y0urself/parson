@@ -1,10 +1,8 @@
 var grid = 40;
 var maxlevel = 10;
 var url = window.location.pathname.split('/');
-var quizID = url[url.length - 1];
-window.serialized = '';
-window.loadedfromstorage = false
-
+ParsonAPP.loadedfromstorage = false
+ParsonAPP.quizID=url[url.length - 1];
 function joinCollab() {
     var collabGroup = $('#form_collab').val().trim()
     socket.emit('collaborate', collabGroup);
@@ -29,7 +27,7 @@ $(document).ready(function() {
         e.preventDefault();
     }, false);
     $('#loadLsg').on('click', function(e) {
-        window.serialized = $('#form_reload').val().trim();
+        ParsonAPP.serialized = $('#form_reload').val().trim();
         ParsonAPP.render()
         ParsonAPP.serializeQuiz()
     });
@@ -48,81 +46,93 @@ $(document).ready(function() {
 
 
 
-function loadFromStorage() {
-    if (!window.loadedfromstorage) {
-        if (localStorage.getItem("quizstate_" + quizID) != undefined) {
-            window.serialized = JSON.parse(localStorage.getItem("quizstate_" + quizID))
-            $('#form_reload').val(window.serialized)
-            $('#serialized').text(window.serialized)
+
+
+
+ParsonAPP.loadFromStorage=function() {
+    if (!ParsonAPP.loadedfromstorage) {
+        if (localStorage.getItem("quizstate_" + ParsonAPP.quizID) != undefined) {
+            ParsonAPP.serialized = JSON.parse(localStorage.getItem("quizstate_" + ParsonAPP.quizID))
+            $('#form_reload').val(ParsonAPP.serialized)
+            $('#serialized').text(ParsonAPP.serialized)
         }
-        if (localStorage.getItem("collaborate_" + quizID) != undefined) {
-            $('#form_collab').val(localStorage.getItem("collaborate_" + quizID))
+        if (localStorage.getItem("collaborate_" + ParsonAPP.quizID) != undefined) {
+            $('#form_collab').val(localStorage.getItem("collaborate_" + ParsonAPP.quizID))
             joinCollab()
         }
     }
-    window.loadedfromstorage = true;
+    ParsonAPP.loadedfromstorage = true;
 }
-
-
-
 ParsonAPP.undo = function() {
-    if(ParsonAPP.undoHistory.length>1){
-        window.serialized=ParsonAPP.undoHistory[ParsonAPP.undoHistory.length-2]
-        ParsonAPP.redoHistory.push(window.serialized)
-        ParsonAPP.undoHistory.splice(-1,1)
-        $('#form_reload').val(window.serialized)
-        $('#serialized').text(window.serialized)
-        ParsonAPP.render()
+    if(ParsonAPP.undoHistory.length>=1){
+        ParsonAPP.redoHistory.push(ParsonAPP.serialized)
+        ParsonAPP.setSerialized(ParsonAPP.undoHistory.pop())
     }
 }
 ParsonAPP.redo = function() {
-    if(ParsonAPP.redoHistory.length>0){
-        window.serialized=ParsonAPP.redoHistory[ParsonAPP.redoHistory.length-1]
-        ParsonAPP.undoHistory.push(window.serialized)
-        ParsonAPP.redoHistory.splice(-1,1)
-        $('#form_reload').val(window.serialized)
-        $('#serialized').text(window.serialized)
+    if(ParsonAPP.redoHistory.length>=1){
+        ParsonAPP.undoHistory.push(ParsonAPP.serialized)
+        ParsonAPP.setSerialized(ParsonAPP.redoHistory.pop())
+    }
+}
+ParsonAPP.setSerialized=function(serialized) {
+    ParsonAPP.serialized=serialized
+    socket.emit('serialized', serialized);
+    localStorage.setItem("quizstate_" + ParsonAPP.quizID, JSON.stringify(ParsonAPP.serialized))
+    $('#form_reload').val(ParsonAPP.serialized)
+    $('#serialized').text(ParsonAPP.serialized)
+    ParsonAPP.render()
+}
+ParsonAPP.sockethandlers={
+    connect:function(msg) {
+        socket.emit('request', url[url.length - 1])
+    },
+    state:function(msg) {
+        ParsonAPP.loadFromStorage()
+        $('.jumbotron > h1').text(msg.name)
+        $('#description').text(msg.description)
+        ParsonAPP.parts = msg.parts
+        ParsonAPP.js_input = msg.js_input
+        $('#js_input').val(msg.js_input)
+        ParsonAPP.js_pre = msg.js_pre
+        ParsonAPP.js_suf = msg.js_suf
+
+        if ((msg.disableCollab === true)) {
+            $('.form_group_collab').hide()
+        }
+        if ((msg.disableJS === true)) {
+            $('#js_part').hide()
+        }
         ParsonAPP.render()
+        ParsonAPP.serializeQuiz()
+        ParsonAPP.doNewDraggable();
+    },
+    serializationRequest:function(msg) {
+        ParsonAPP.serializeQuiz()
+    },
+    serialized:function(msg) {
+        ParsonAPP.setSerialized(msg)
     }
 }
 
+
+
+ParsonAPP.registerSocketHandlers=function() {
+    socket.on('connect', ParsonAPP.sockethandlers.connect);
+    socket.on('state', ParsonAPP.sockethandlers.state );
+    socket.on('serialized', ParsonAPP.sockethandlers.serialized );
+    socket.on('serializationRequest', ParsonAPP.sockethandlers.serializationRequest );
+}
+
+
+
+ParsonAPP.registerSocketHandlers()
 document.onkeydown = function(e) {
     e = e || window.event;
-    if (e.keyCode == '37') {
+    if (e.keyCode == '188') {
        ParsonAPP.undo()
     }
-    else if (e.keyCode == '39') {
+    else if (e.keyCode == '190') {
        ParsonAPP.redo()
     }
 }
-socket.on('connect', function(a) {
-    socket.emit('request', url[url.length - 1])
-});
-socket.on('serializationRequest', function() {
-    ParsonAPP.serializeQuiz();
-});
-socket.on('serialized', function(a) {
-    $('#serialized').text(a)
-    window.serialized = a
-    ParsonAPP.render();
-});
-socket.on('state', function(a) {
-    loadFromStorage()
-    $('.jumbotron > h1').text(a.name)
-    $('#description').text(a.description)
-    window.parts = a.parts
-    window.js_input = a.js_input
-    $('#js_input').val(a.js_input)
-    window.js_pre = a.js_pre
-    window.js_suf = a.js_suf
-
-    if ((a.disableCollab === true)) {
-        $('.form_group_collab').hide()
-    }
-    if ((a.disableJS === true)) {
-        $('#js_part').hide()
-    }
-    ParsonAPP.render()
-    ParsonAPP.serializeQuiz()
-    ParsonAPP.doNewDraggable();
-});

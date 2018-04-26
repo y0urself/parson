@@ -202,10 +202,6 @@ app.get(['/puzzles/', '/'], function(req, res) {
     });
 });
 
-// app.get('/puzzles/:puzzleID/show', function(req, res){
-//     res.render('show',{urlprefix:'./',puzzles:puzzles});
-// });
-
 app.get(['/puzzles/:puzzleID/edit', '/puzzles/:puzzleID/duplicate'], function(req, res) {
     res.render('new', {
         id: req.params.puzzleID

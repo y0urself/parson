@@ -1,17 +1,15 @@
 var ParsonAPP = ParsonAPP || {};
+var CommonAPP = CommonAPP || {};
 var socket = io();
-socket.on('redirect', function(a) {
-    window.location = a
-});
 
-function fancyAlert(a) {
+
+CommonAPP.socketHandlers={}
+CommonAPP.socketHandlers.alert=function(a) {
     if (typeof a == 'string')
         a = {
             type: 'primary',
             message: a
         }
-
-
     $(".alertWrapper").removeClass(function(index, className) {
         return (className.match(/(^|\s)alert-\S+/g) || []).join(' ');
     });
@@ -24,20 +22,34 @@ function fancyAlert(a) {
         }, a.timeout);
     }
 }
-socket.on('alert', fancyAlert);
+CommonAPP.socketHandlers.redirect=function(a) {
+    window.location = a
+}
+CommonAPP.registerSocketHandlers=function() {
+    CommonAPP.socket.on('redirect',CommonAPP.socketHandlers.redirect)
+    CommonAPP.socket.on('alert',CommonAPP.socketHandlers.alert)
+
+}
+CommonAPP.init=function(socket){
+    CommonAPP.socket=socket;
+}
+
+CommonAPP.init(socket)
+CommonAPP.registerSocketHandlers()
+
+
 
 ParsonAPP.undoHistory=[];
 ParsonAPP.redoHistory=[];
-
 ParsonAPP.render = function() {
     var bucketParts = {};
     var playParts = []
-    var unser = window.serialized.split(' ')
+    var unser = ParsonAPP.serialized.split(' ')
     level = 0;
     for (var k in unser) {
         if (unser[k] == '')
             continue
-        if (unser[k] != '{' && unser[k] != '}' && window.parts[unser[k]] == undefined) {
+        if (unser[k] != '{' && unser[k] != '}' && ParsonAPP.parts[unser[k]] == undefined) {
             fancyAlert({
                 type: 'danger',
                 message: 'Die Serialisierung passt nich zum Puzzle!'
@@ -57,14 +69,21 @@ ParsonAPP.render = function() {
             continue
         playParts.push({
             'id':unser[k],
-            'name': window.parts[unser[k]].name,
+            'name': ParsonAPP.parts[unser[k]].name,
             'level': level,
-            'js': window.parts[unser[k]].js
+            'js': ParsonAPP.parts[unser[k]].js
         });
     }
-    for (var k in window.parts) {
-        if (playParts[k] == undefined) {
-            bucketParts[k] = window.parts[k]
+    for (var k in ParsonAPP.parts) {
+        var found = false;
+        for(var i = 0; i < playParts.length; i++) {
+            if (playParts[i].id == k) {
+                found = true;
+                break;
+            }
+        }
+        if(!found) {
+            bucketParts[k] = ParsonAPP.parts[k]
         }
     }
     var bucketHTML = ''
@@ -105,16 +124,17 @@ ParsonAPP.doLevel = function(event, ui) {
     $(dropped).data('level', newMargin)
     ParsonAPP.renderLevel();
     ParsonAPP.serializeQuiz();
+
 }
-
-
-
-
-ParsonAPP.serializeQuiz = function() {
+ParsonAPP.serializeQuiz = function(ignoreHistory) {
+    if(!(ignoreHistory===true) && ParsonAPP.serialized!==undefined){
+        ParsonAPP.undoHistory.push(ParsonAPP.serialized)
+        ParsonAPP.redoHistory=[]
+    }
     var ids = [];
     var lastLevel = 0;
     var lii = '';
-    var js = window.js_pre + ';';
+    var js = ParsonAPP.js_pre + ';';
     $.each($('#play > .part'), function(k, v) {
         var lvl = parseInt($(v).data('level'));
         var idt = ''+$(v).data('id');
@@ -127,15 +147,15 @@ ParsonAPP.serializeQuiz = function() {
             js += Array(lastLevel - lvl + 1).join("}")
         }
         lii += idt + ' ';
-        js += window.parts[idt].js + '\n';
+        js += ParsonAPP.parts[idt].js + '\n';
         lastLevel = lvl;
         ids.push(idt.replace(/[a-zA-Z]|_[0-9]/, ""));
     });
     lii += Array(lastLevel + 1).join("} ");
     js += Array(lastLevel + 1).join("}");
-    js += ';' + window.js_suf;
+    js += ';' + ParsonAPP.js_suf;
     $('#serialized').text(lii);
-    ParsonAPP.undoHistory.push(lii);
+
     $('#js_show').val(js_beautify(js));
 
     ids.sort();
@@ -154,22 +174,19 @@ ParsonAPP.serializeQuiz = function() {
             $("#warnings").append(str);
         }
     }
-
-    socket.emit('serialized', lii);
-    window.serialized = lii
-    localStorage.setItem("quizstate_" + quizID, JSON.stringify(window.serialized))
+    ParsonAPP.setSerialized(lii)
+//     socket.emit('serialized', lii);
+//     ParsonAPP.serialized = lii
+//     localStorage.setItem("quizstate_" + quizID, JSON.stringify(ParsonAPP.serialized))
 }
-
-
-
-
+ParsonAPP.doReceive=function(event, ui) {
+    $(ui.item).data('level', '0');
+    ParsonAPP.serializeQuiz();
+}
 ParsonAPP.doNewDraggable = function() {
     $("#bucket").sortable({
         connectWith: "#play",
-        receive: function(event, ui) {
-            $(ui.item).data('level', '0');
-            ParsonAPP.serializeQuiz();
-        }
+        receive: ParsonAPP.doReceive
     });
     $("#play").sortable({
         connectWith: "#bucket",
