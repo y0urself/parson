@@ -276,6 +276,7 @@ io.on('connection', function(socket) {
         puzzles[q.id] = q
         socket.emit('redirect', '/puzzles/' + q.id)
         dynamo.put();
+        console.log(puzzles)
     });
 
     socket.on('edit', function(msg) {
@@ -285,6 +286,7 @@ io.on('connection', function(socket) {
                 puzzles[q.id] = q
                 socket.emit('redirect', '/puzzles/' + q.id)
                 dynamo.put();
+                console.log(puzzles)
             } else {
                 console.log("wrong PW")
                 socket.emit('alert', {
