@@ -109,30 +109,30 @@ if (use_dynamo) {
     }
 }
 
-function texing(req){
-	var puzzle=getPuzzlePublic(puzzles[req.params.puzzleID]);
-	var partstring="";
-	var i = 0;
-	var keys = Object.keys(puzzle.parts);
-	while(i < keys.length){
-		var k=keys[i];
-		if((i+1)<keys.length && puzzle.parts[k].name.length<=26){
-			partstring+="            \\ppart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} &";
-			i++
-			k=keys[i];
-			if(puzzle.parts[keys[i]].name.length<=26){
-				partstring+="            \\ppart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} \\\\[10pt]\n";
-			i++
-			} else {
-				partstring+="            & \\\\[10pt]\n"
-			}
-		} else {
-			partstring+="            \\multicolumn{2}{l}{\\dpart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} }\\\\[10pt]\n";
-			i++;
-		}
-	}
-	puzzle.parts=partstring;
-	return puzzle;
+function texing(id) {
+    var puzzle = getPuzzlePublic(puzzles[id]);
+    var partstring = "";
+    var i = 0;
+    var keys = Object.keys(puzzle.parts);
+    while (i < keys.length) {
+        var k = keys[i];
+        if ((i + 1) < keys.length && puzzle.parts[k].name.length <= 26) {
+            partstring += "            \\ppart{" + k.replace('_', '\\_') + "}{" + puzzle.parts[k].name + "} &";
+            i++
+            k = keys[i];
+            if (puzzle.parts[keys[i]].name.length <= 26) {
+                partstring += "            \\ppart{" + k.replace('_', '\\_') + "}{" + puzzle.parts[k].name + "} \\\\[10pt]\n";
+                i++
+            } else {
+                partstring += "            & \\\\[10pt]\n"
+            }
+        } else {
+            partstring += "            \\multicolumn{2}{l}{\\dpart{" + k.replace('_', '\\_') + "}{" + puzzle.parts[k].name + "} }\\\\[10pt]\n";
+            i++;
+        }
+    }
+    puzzle.parts = partstring;
+    return puzzle;
 }
 
 //*********************************************************************END
@@ -212,12 +212,14 @@ app.get(['/puzzles/:puzzleID/edit', '/puzzles/:puzzleID/duplicate'], function(re
     });
 });
 app.get(['/puzzles/:puzzleID/tex'], function(req, res) {
-    var puzzle = texing(req);
-	res.send(
-	mustache.render(texTemplate,
-		puzzle
-	)
-);
+    var puzzle = texing(req.params.puzzleID);
+    res.setHeader('Content-type', 'application/x-tex');
+    res.setHeader('Content-disposition', 'attachment; filename=Parson-' + req.params.puzzleID + '.tex');
+    res.send(
+        mustache.render(texTemplate,
+            puzzle
+        )
+    );
 });
 
 app.use(express.static('static'));

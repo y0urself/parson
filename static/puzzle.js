@@ -34,7 +34,7 @@ $(document).ready(function() {
         ParsonAPP.serializeQuiz()
     });
     $('#collab').on('click', joinCollab);
-    $('#createPDF').on('click', createPDF);
+    //     $('#createPDF').on('click', createPDF);
     $('#leave').on('click', function(e) {
         $('#form_collab').val("");
         joinCollab()
