@@ -117,11 +117,11 @@ function texing(req){
 	while(i < keys.length){
 		var k=keys[i];
 		if((i+1)<keys.length && puzzle.parts[k].name.length<=26){
-			partstring+="            \\ppart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} &";
+			partstring+="            \\ppart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} &[10pt]";
 			i++
 			k=keys[i];
 			if(puzzle.parts[keys[i]].name.length<=26){
-				partstring+="            \\ppart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} \\\\[10pt]\n";
+				partstring+="            \\ppart{"+k.replace('_','\\_')+"}{"+puzzle.parts[k].name+"} \\\\[15pt]\n";
 			i++
 			} else {
 				partstring+="            & \\\\[10pt]\n"
