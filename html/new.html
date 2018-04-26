@@ -167,21 +167,23 @@
         });
         function areaToSingle() {
             var arrays=$('#form_codearea').val().split("\n")
+            var i=0;
             for(var k in arrays) {
                 var val=arrays[k].trim();
                 if(val=='') continue
                 vals=val.split('|');
                 if(vals.length>1) {
-                    $('.form_name').eq(k).val(vals[1])
-                    $('.form_id').eq(k).val(vals[0])
+                    $('.form_name').eq(i).val(vals[1])
+                    $('.form_id').eq(i).val(vals[0])
                     if(vals.length>2) {
-                        $('.form_js').eq(k).val(vals[2])
+                        $('.form_js').eq(i).val(vals[2])
                     }
                 }else{
-                    $('.form_name').eq(k).val(arrays[k].trim())
-                    $('.form_id').eq(k).val(''+(parseInt(k)+1)+'A')
+                    $('.form_name').eq(i).val(arrays[k].trim())
+                    $('.form_id').eq(i).val(''+(parseInt(i)+1)+'A')
                 }
                 checkAppend()
+                i++;
             }
             $('#form_codearea').val('');
         }
