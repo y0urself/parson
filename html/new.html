@@ -158,10 +158,11 @@
                     }
                 }else{
                     $('.form_name').eq(k).val(arrays[k].trim())
-                    $('.form_id').eq(k).val(''+(k+1)+'A')
+                    $('.form_id').eq(k).val(''+(parseInt(k)+1)+'A')
                 }
                 checkAppend()
             }
+            $('#form_codearea').val('');
         }
         
         </script>
