@@ -165,8 +165,20 @@
             });
             
         });
+        
+        function shuffleArray(array) {
+    		for (var i = array.length - 1; i > 0; i--) {
+        		var j = Math.floor(Math.random() * (i + 1));
+        		var temp = array[i];
+        		array[i] = array[j];
+        		array[j] = temp;
+    		}
+		}
+        
         function areaToSingle() {
             var arrays=$('#form_codearea').val().split("\n")
+            if($('#shuffleArr').is(':checked'))
+            	shuffleArray(arrays);
             var i=0;
             for(var k in arrays) {
                 var val=arrays[k].trim();
@@ -187,6 +199,32 @@
             }
             $('#form_codearea').val('');
         }
+        
+        /*
+        function areaToSingle() {
+            var arrays=$('#form_codearea').val().split("\n")
+            shuffleArray(arrays);
+            var i=0;
+            for(var k in arrays) {
+                var val=arrays[k].trim();
+                if(val=='') continue
+                vals=val.split('|');
+                if(vals.length>1) {
+                    $('.form_name').eq(i).val(vals[1])
+                    $('.form_id').eq(i).val(vals[0])
+                    if(vals.length>2) {
+                        $('.form_js').eq(i).val(vals[2])
+                    }
+                }else{
+                    $('.form_name').eq(i).val(arrays[k].trim())
+                    $('.form_id').eq(i).val(''+(parseInt(i)+1)+'A')
+                }
+                checkAppend()
+                i++;
+            }
+            $('#form_codearea').val('');
+        }
+        */
         
         </script>
                 <title>
@@ -273,16 +311,16 @@
                     <label for="form_js_input">
                         Javascript-Eingabe
                     </label>
-                    <input type="text" class="form-control" id="form_js_input" value="[42,42,42]">
+                    <input type="text" class="form-control monotextarea" id="form_js_input" placeholder="[42,42,42]">
                     <small id="form_js_input" class="form-text text-muted">
-                        Dies ist durch den Nutzer änderbar, wird ihm vorgeschlagen. Ist als "js_input" verwendbar.
+                        Dies ist durch den Nutzer änderbar, ihm wird aber dieser defaultwert vorgeschlagen. Ist als "js_input" verwendbar.
                     </small>
                 </div>
                 <div class="form-group">
                     <label for="form_js_pre">
                         Javascript-Prefix
                     </label>
-                    <input type="text" class="form-control" id="form_js_pre" value="var out=''; function print(a){out+=a+'\n'};var feld=js_input">
+                    <input type="text" class="form-control monotextarea" id="form_js_pre" value="var out=''; function print(a){out+=a+'\n'};var feld=js_input">
                     <small id="form_js_pre" class="form-text text-muted">
                         Dies ist der Javascript-Code, der _vor_ den Puzzlestücken eingefügt wird
                     </small>
@@ -291,7 +329,7 @@
                     <label for="form_js_suf">
                         Javascript-Suffix
                     </label>
-                    <input type="text" class="form-control" id="form_js_suf" value="out;">
+                    <input type="text" class="form-control monotextarea" id="form_js_suf" value="out;">
                     <small id="form_js_suf" class="form-text text-muted">
                         Dies ist der Javascript-Code, der _nach_ den Puzzlestücken eingefügt wird.
                         Insbesondere wird der letzte Ausdruck als "Ausgabe" gewertet.
@@ -308,6 +346,7 @@
                     </ul>
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
+                        	Manuelle Eingabe von Parson-Teilen
                             <table class="table table-bordered table-condensed puzzletable">
                                 <tbody>
                                     <tr class="form_row">
@@ -343,9 +382,20 @@
                         <div class="tab-pane fade" id="multiple" role="tabpanel" aria-labelledby="multiple-tab">
                             <div class="form-group">
                                 <label for="form_codearea">
-                                    Programmcode hier eintragen
+                                    
                                 </label>
-                                <textarea style="min-height:80px;" class="form-control" id="form_codearea" rows="3"></textarea> 
+                                <textarea style="min-height:80px;" class="form-control monotextarea" id="form_codearea" rows="3" placeholder="Programmcode hier eintragen"></textarea>
+                                <small id="multiple" class="form-text text-muted">
+                        			In diesem Textfeld kann ein ganzes Parson Puzzle eingegeben werden. Hierfür gibt es verschiedene Möglichkeiten:<br>
+                        			1. <span id="monosp">Programmcode</span> - Der Puzzle-Code wird zeilenweise zu Parson-Teilen geschnitten, der Bezeichner hierfür werden generiert.<br>
+                        			2. <span id="monosp">Bezeichner | Programmcode | Javascript-Equivalent</span> - Hier werden alle Felder gefüllt, separiert durch |.
+                    			</small>
+                    			<div class="form-check">
+                        			<label class="form-check-label" for="disableCollab">
+                            			<input class="form-check-input" type="checkbox" value="" id="shuffleArr">
+                            				Mischen? <small><span id="warnings">Achtung: Wenn die Teile nicht gemischt werden, lässt sich die korrekte Reihenfolge im Array sehen</span></small>
+                        			</label>
+                    			</div>
                             </div>
                         </div>
                     </div>
