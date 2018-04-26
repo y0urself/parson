@@ -14,6 +14,7 @@
     "aws-sdk": "^2.227.1",
     "express": "^4.13.3",
     "guid": "*",
+    "mustache": "^2.3.0",
     "mustache-express": "*",
     "node-persist": "2.1.0",
     "password-hash": "^1.2.2",
