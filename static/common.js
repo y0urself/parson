@@ -29,14 +29,13 @@ socket.on('alert', fancyAlert);
 
 ParsonAPP.render = function() {
     var bucketParts = {};
-    var playParts = {}
+    var playParts = []
     var unser = window.serialized.split(' ')
     level = 0;
     for (var k in unser) {
         if (unser[k] == '')
             continue
         if (unser[k] != '{' && unser[k] != '}' && window.parts[unser[k]] == undefined) {
-            console.log(unser[k])
             fancyAlert({
                 type: 'danger',
                 message: 'Die Serialisierung passt nich zum Puzzle!'
@@ -54,18 +53,18 @@ ParsonAPP.render = function() {
         }
         if (unser[k] == '')
             continue
-        playParts[unser[k]] = {
+        playParts.push({
+            'id':unser[k],
             'name': window.parts[unser[k]].name,
             'level': level,
             'js': window.parts[unser[k]].js
-        };
+        });
     }
     for (var k in window.parts) {
         if (playParts[k] == undefined) {
             bucketParts[k] = window.parts[k]
         }
     }
-    console.log(bucketParts)
     var bucketHTML = ''
     for (var k in bucketParts) {
         bucketHTML += '<div class=part data-id=' + k + '><div class=identifier>' + k + '</div><div class="title monotextarea">' + bucketParts[k].name + '</div></div>';
@@ -74,7 +73,7 @@ ParsonAPP.render = function() {
 
     var playHTML = ''
     for (var k in playParts) {
-        playHTML += '<div class=part data-id="' + k + '" data-level="' + playParts[k].level + '"><div class=identifier>' + k + '</div><div class="title monotextarea">' + playParts[k].name + '</div></div>';
+        playHTML += '<div class=part data-id="' + playParts[k].id + '" data-level="' + playParts[k].level + '"><div class=identifier>' + playParts[k].id + '</div><div class="title monotextarea">' + playParts[k].name + '</div></div>';
     }
     $('#play').html(playHTML);
     ParsonAPP.renderLevel()
@@ -89,7 +88,6 @@ ParsonAPP.renderLevel = function() {
 ParsonAPP.doLevel = function(event, ui) {
     var dropped = ui.item;
     var pos = ui.position.left
-    console.log(ui.position)
     var curMargin = $(dropped).data('level');
     if (curMargin == undefined) {
         curMargin = 0;
@@ -116,8 +114,7 @@ ParsonAPP.serializeQuiz = function() {
     var js = window.js_pre + ';';
     $.each($('#play > .part'), function(k, v) {
         var lvl = parseInt($(v).data('level'));
-        var idt = $(v).data('id');
-        console.log(lastLevel + '_' + lvl)
+        var idt = ''+$(v).data('id');
         if (lvl > lastLevel) {
             lii += Array(lvl - lastLevel + 1).join("{ ")
             js += Array(lvl - lastLevel + 1).join("{")
@@ -127,7 +124,6 @@ ParsonAPP.serializeQuiz = function() {
             js += Array(lastLevel - lvl + 1).join("}")
         }
         lii += idt + ' ';
-        console.log("ID: " + idt.replace(/[a-zA-Z]|_[0-9]/, ""));
         js += window.parts[idt].js + '\n';
         lastLevel = lvl;
         ids.push(idt.replace(/[a-zA-Z]|_[0-9]/, ""));
@@ -139,7 +135,6 @@ ParsonAPP.serializeQuiz = function() {
     $('#js_show').val(js_beautify(js));
 
     ids.sort();
-    console.log(ids);
     duplicates = [];
     for (var i = 1; i < ids.length; i++) {
         if (ids[i] == ids[i - 1]) {
