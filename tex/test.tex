@@ -1,0 +1,47 @@
+\documentclass{report}
+\usepackage[many]{tcolorbox}
+\usepackage{tikz}
+\newtcbox{\parsonbox}[2]{
+    enhanced,
+    nobeforeafter,
+    tcbox raise base,
+    boxrule=0.4pt,
+    top=0mm,
+    bottom=0mm,
+    right=0mm,
+    left=#1,
+    arc=2pt,
+    boxsep=2pt,
+    before upper={\vphantom{dlg}},
+    colframe=black,
+    coltext=black,
+    colback=lightgray,
+    overlay={
+        \begin{tcbclipinterior}
+        \fill[black]
+        (frame.south west)
+        rectangle node[
+            text=white,
+            font=\sffamily\bfseries]
+            {#2}
+            ([xshift=#1]frame.north west);
+        \end{tcbclipinterior}
+    }
+}
+    
+    
+
+\begin{document}
+
+
+
+\begin{tabular}{ll}
+\hline
+\parsonbox{6mm}{asd}{\makebox[0.5\linewidth][l]{asd}} & \parsonbox{6mm}{asd}{\makebox[0.5\linewidth][l]{asd}} \\
+\hline
+\multicolumn{2}{l}{
+\parsonbox{6mm}{lol}{\makebox[\linewidth][l]{asd}}
+}\\
+\hline
+\end{tabular}
+\end{document}
