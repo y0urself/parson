@@ -295,14 +295,24 @@ $(document).ready(function() {
                 //                 var $textarea = $('#js_eval');
                 //                 $textarea.scrollTop($textarea[0].scrollHeight);
             };
-            interpreter.setProperty(scope, 'print', interpreter.createNativeFunction(print));
+            interpreter.setProperty(scope, 'print_internal', interpreter.createNativeFunction(print));
         };
         if (ParsonAPP.stepper !== undefined) {
             window.clearTimeout(ParsonAPP.stepper)
             $('#js_eval').val($('#js_eval').val() + "---------------\nAborted by user after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
             delete ParsonAPP.stepper
         }
-        var myInterpreter = new Interpreter("var js_input=" + $('#js_input').val() + ";" + $('#js_show').val(), initFunc);
+        var myInterpreter = new Interpreter(
+                "var js_input=" + $('#js_input').val() + ";"+
+                "function print(a){"+
+                "if(typeof a == 'string'){"+
+                " print_internal(a);"+
+                "}else{"+
+                " print_internal(JSON.stringify(a))"+
+                "}" + 
+                "};" + 
+                $('#js_show').val(), 
+                initFunc);
         window.steps = 0
         window.startrun = Date.now()
 
