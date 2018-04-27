@@ -292,12 +292,12 @@ $(document).ready(function() {
         var initFunc = function(interpreter, scope) {
             var print = function(text) {
                 $('#js_eval').val($('#js_eval').val() + text + "\n")
-//                 var $textarea = $('#js_eval');
-//                 $textarea.scrollTop($textarea[0].scrollHeight);
+                //                 var $textarea = $('#js_eval');
+                //                 $textarea.scrollTop($textarea[0].scrollHeight);
             };
             interpreter.setProperty(scope, 'print', interpreter.createNativeFunction(print));
         };
-        if(ParsonAPP.stepper!==undefined){
+        if (ParsonAPP.stepper !== undefined) {
             window.clearTimeout(ParsonAPP.stepper)
             $('#js_eval').val($('#js_eval').val() + "---------------\nAborted by user after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
             delete ParsonAPP.stepper
@@ -307,17 +307,17 @@ $(document).ready(function() {
         window.startrun = Date.now()
 
         function nextStep() {
-            try{
+            try {
                 if (myInterpreter.step()) {
                     $('#js_steps').val(window.steps++);
-                    ParsonAPP.stepper=window.setTimeout(nextStep, 1);
+                    ParsonAPP.stepper = window.setTimeout(nextStep, 1);
                 } else {
                     $('#js_eval').val($('#js_eval').val() + "---------------\nFinished in " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
                     delete ParsonAPP.stepper
                 }
-            }catch(err){
-                    delete ParsonAPP.stepper
-                    $('#js_eval').val($('#js_eval').val() + "---------------\nAborted after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n"+JSON.stringify(err.message)+"\n---------------\n")
+            } catch (err) {
+                delete ParsonAPP.stepper
+                $('#js_eval').val($('#js_eval').val() + "---------------\nAborted after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n" + JSON.stringify(err.message) + "\n---------------\n")
             }
         }
         nextStep();

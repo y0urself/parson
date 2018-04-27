@@ -50,7 +50,12 @@ jQuery.fn.extend({
 });
 
 $(function(){
-    	$("#parts_table").sortable();
+    $("#parts_table > tbody").sortable({
+        items: ".form_row:not(:last-child)",
+        handle: '.btn_move',
+        cancel: 'input,textarea,button:not(.btn_move),select,option'
+        
+    });
 });
 
 function checkAppend() {
@@ -102,13 +107,26 @@ $(document).ready(function() {
         });
     });
     $("#form_sort").on('click', function(e) {
-        var sortedArray = $(".form_row:not(:last)").get().sort(function(a, b) {
-            var idx = parseInt($(a).find(".form_id").val(), 10);
-            var idx2 = parseInt($(b).find(".form_id").val(), 10);
-            return idx > idx2;
+        var sortedArray = $(".form_row:not(:last)").get().sort(function(aElm, bElm) {
+            /* What a nice implementation! Wow. Thanks to https://stackoverflow.com/a/15479354/1154316 */
+            var a=$(aElm).find(".form_id").val()
+            var b=$(bElm).find(".form_id").val()
+            var ax = [], bx = [];
+
+            a.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { ax.push([$1 || Infinity, $2 || ""]) });
+            b.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { bx.push([$1 || Infinity, $2 || ""]) });
+    
+            while(ax.length && bx.length) {
+                var an = ax.shift();
+                var bn = bx.shift();
+                var nn = (an[0] - bn[0]) || an[1].localeCompare(bn[1]);
+                if(nn) return nn;
+            }
+
+            return ax.length - bx.length;
         });
         $(".form_row:not(:last)").remove()
-        $(sortedArray).prependTo(".puzzletable > tbody");
+        $(sortedArray).prependTo("#parts_table > tbody");
     });
     $("body").on('click', '.form_delete', function(e) {
         $(this).closest('.form_row').remove();
@@ -122,7 +140,7 @@ $(document).ready(function() {
             if (!window.confirm("Achtung! Wenn Nutzer das Quiz schon mal bearbeitet haben, macht das 'mischen' ihre Lösung komplett kaputt, da die IDs neu zu Codezeilen zugeordnet werden. Trotzdem mischen?"))
                 return false;
         }
-        var $firstCells = $(".puzzletable:eq(0) tr td:first-child"),
+        var $firstCells = $("#parts_table tr td:first-child"),
             $copies = $firstCells.clone(true);
 
         $copies = $copies.not(":last");
