@@ -1,3 +1,13 @@
+
+var url = window.location.pathname.split('/');
+window.qid = false;
+if (url[url.length - 1] == 'edit') {
+    window.qid = url[url.length - 2]
+    socket.emit('request', window.qid)
+}
+if (url[url.length - 1] == 'duplicate') {
+    socket.emit('request', url[url.length - 2])
+}
 socket.on('state', function(a) {
     window.parts = a.parts
     fillParts()
@@ -9,17 +19,10 @@ socket.on('state', function(a) {
     $('#disableCollab').prop("checked", (a.disableCollab === true))
     $('#disableJS').prop("checked", (a.disableJS === true))
     $('#hidePuzzle').prop("checked", (a.hidePuzzle === true))
+    if(localStorage.getItem("password_" + window.qid) != undefined){
+        $('#form_password').val(localStorage.getItem("password_" + window.qid))
+    }
 });
-
-var url = window.location.pathname.split('/');
-window.qid = false;
-if (url[url.length - 1] == 'edit') {
-    window.qid = url[url.length - 2]
-    socket.emit('request', window.qid)
-}
-if (url[url.length - 1] == 'duplicate') {
-    socket.emit('request', url[url.length - 2])
-}
 
 function fillParts() {
     var k = 0;
@@ -185,6 +188,10 @@ $(document).ready(function() {
             disableJS: $('#disableJS').is(':checked'),
             hidePuzzle: $('#hidePuzzle').is(':checked')
         };
+        if($('#savePassword').is(':checked')) {
+            localStorage.setItem("password_" + window.qid, $('#form_password').val())
+        
+        }
         if ($('#deletePuzzle').is(':checked')) {
             socket.emit('delete', quiz);
         } else {
