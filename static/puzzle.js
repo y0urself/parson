@@ -15,7 +15,7 @@ ParsonAPP.render = function() {
         if (unser[k] == '')
             continue
         if (unser[k] != '{' && unser[k] != '}' && ParsonAPP.parts[unser[k]] == undefined) {
-            fancyAlert({
+            CommonAPP.alert({
                 type: 'danger',
                 message: 'Die Serialisierung passt nich zum Puzzle!'
             });

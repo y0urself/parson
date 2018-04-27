@@ -2,9 +2,7 @@ var ParsonAPP = ParsonAPP || {};
 var CommonAPP = CommonAPP || {};
 var socket = io();
 
-
-CommonAPP.socketHandlers = {}
-CommonAPP.socketHandlers.alert = function(a) {
+CommonAPP.alert = function(a) {
     if (typeof a == 'string')
         a = {
             type: 'primary',
@@ -21,6 +19,10 @@ CommonAPP.socketHandlers.alert = function(a) {
             $(".alertWrapper").hide();
         }, a.timeout);
     }
+}
+CommonAPP.socketHandlers = {}
+CommonAPP.socketHandlers.alert = function(a){
+    CommonAPP.alert(a);
 }
 CommonAPP.socketHandlers.redirect = function(a) {
     window.location = a
