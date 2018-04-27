@@ -124,7 +124,7 @@ function texing(id) {
                 partstring += "            \\ppart{" + k.replace('_', '\\_') + "}{" + puzzle.parts[k].name + "} \\\\[10pt]\n";
                 i++
             } else {
-                partstring += "            & \\\\[10pt]\n"
+                partstring += "            \\\\[10pt]\n"
             }
         } else {
             partstring += "            \\multicolumn{2}{l}{\\dpart{" + k.replace('_', '\\_') + "}{" + puzzle.parts[k].name + "} }\\\\[10pt]\n";
