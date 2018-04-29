@@ -5,6 +5,8 @@
         </script>
         <script src="/puzzle.js" type="text/javascript">
         </script>
+        <link rel="stylesheet" href="/layout.css" />
+
 <!-- 
         <script src="/tex/promisejs/promise.js"></script>
         <script src="/tex/pdftex.js" type="text/javascript"></script>
@@ -15,15 +17,25 @@
         </title>
     </head>
     <body>
-        {{>fancy_alert}} 
-        <div class="container">
+        <header>
+        	<div class="container-fluid">
+				<div class="row">
+					<div id="backbtn" class="col-sm-2">&nbsp;
+						<a role="button" class="btn btn-dark" href="/puzzles">
+							Zurück 
+						</a>
+					</div>
+					<div class="col-sm-8">
+						<h1 align="center">
+							Parson's Puzzles 
+						</h1>
+					</div>
+				</div>
+			</div>
+    	</header>
+    	{{>fancy_alert}} 
+        <div id="content" class="container-fluid">
             <div class="jumbotron">
-                <a href="/puzzles">
-                    Zurück 
-                </a>
-                <h1>
-                    Parson's Puzzles 
-                </h1>
                 <p>
                     <div id="description">
                     </div>
@@ -34,11 +46,11 @@
                         <div class="cardcontainer">
                             <div id="bucket" class="cardd">
                             </div>
-                            <div id="warnings">
+                            <div id="warnings card1 card2">
                             </div>
                             <div id="play" class="cardd card2">
                             </div>
-                            <div id="serialized" class="cardd card2">
+                            <div id="serialized" class="card1 card2">
                             </div>
                             <div id="js_part" class="cardd card2">
                                 <div class="form-group">
@@ -52,12 +64,12 @@
                                         <input type="text" class="form-control monotextarea" id="js_input" placeholder="Eingabe"> 
                                     </div>
                                     <div class="form-group mx-sm-3 mb-4">
-                                        <a role="button" class="btn float-right btn-info" id="eval">
+                                        <a role="button" class="btn float-right btn-dark" id="eval">
                                             Ausführen 
                                         </a>
                                     </div>
-                                    <div class="form-group mx-sm-3 mb-4">
-                                        Schritte:<input type="text" class="form-control monotextarea" id="js_steps" placeholder="0"> 
+                                    <div class="form-group mb-4">
+                                        Schritte: &nbsp;<input type="text" class="form-control monotextarea" id="js_steps" placeholder="0">
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -67,65 +79,87 @@
                                     <textarea class="form-control monotextarea" id="js_eval" style="width:100%;height:150px;"></textarea> 
                                 </div>
                             </div>
-                            <div class="clearfix card card2">
-<!-- 
-            <div class="row">
-            </div>
- -->
-                                <a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/edit">
-                                    Bearbeiten 
-                                </a>
-                                <a role="button" class="btn float-right btn-info" href="{{urlprefix}}{{id}}/duplicate">
-                                    Duplizieren 
-                                </a>
-<!-- 
-            <a role="button" class="btn float-right btn-secondary" href="{{urlprefix}}{{id}}/show">
-                Beamer-Modus
-            </a>
- -->
-<!-- 
-            <a role="button" class="btn float-right btn-secondary" id="createPDF">
-                PDF erzeugen
-            </a>
- -->
-                                <a role="button" class="btn float-right btn-secondary" href="{{urlprefix}}{{id}}/tex">
-                                    TeX-Version laden 
-                                </a>
-                            </div>
+                            <div class="clearfix card1 card2">
+								<div class="row">
+									<div class="col-sm-4">
+										<a role="button" class="btn btn-dark btn-block" href="{{urlprefix}}{{id}}/edit">
+											Bearbeiten 
+										</a>
+									</div>
+									<div class="col-sm-4">
+										<a role="button" class="btn btn-dark btn-block" href="{{urlprefix}}{{id}}/duplicate">
+											Duplizieren 
+										</a>
+									</div>
+	<!-- 
+				<a role="button" class="btn float-right btn-secondary" href="{{urlprefix}}{{id}}/show">
+					Beamer-Modus
+				</a>
+	 -->
+	<!-- 
+				<a role="button" class="btn float-right btn-secondary" id="createPDF">
+					PDF erzeugen
+				</a>
+	 -->	
+									<div class="col-sm-4">
+										<a role="button" class="btn btn-secondary btn-block" href="{{urlprefix}}{{id}}/tex">
+											TeX-Version laden 
+										</a>
+									</div>
+								</div>
+							</div>
                         </div>
                     </div>
                 </div>
                 <div class="clearfix">
                 </div>
                 <div class="form-group">
-                    <label for="form_reload">
-                        Bekannte Lösung laden. 
+                	<label for="form_reload">
+                        Eine bekannte Lösung laden
                     </label>
-                    <input type="text" class="form-control" id="form_reload" aria-describedby="reloadHelp" placeholder="Serialisierung eingeben"> 
-                    <small id="reloadHelp" class="form-text text-muted">
-                        Einen serialisierten Lösungs-String 
-                    </small>
+                    <div class="row">
+						<div class="col-sm-11">
+                    		<input type="text" class="form-control" id="form_reload" aria-describedby="reloadHelp" placeholder="Serialisierung eingeben"> 
+						</div>
+						<div class="col-sm-1">
+							<a role="button" id="loadLsg" class="btn float-right btn-secondary btn-block">
+								Laden 
+							</a>
+						</div>
+						<div class="col-sm-11">
+							<small id="reloadHelp" class="form-text text-muted help">
+								Einen serialisierten Lösungs-String 
+							</small>
+						</div>
+					</div>
                 </div>
-                <a role="button" id="loadLsg" class="btn float-right btn-secondary">
-                    Laden 
-                </a>
                 <div class="clearfix">
                 </div>
                 <div class="form-group form_group_collab">
                     <label for="form_collab">
-                        Collaborate-Gruppe. 
+                        Einer Kollaborations-Gruppe beitreten
                     </label>
-                    <input type="text" class="form-control" id="form_collab" aria-describedby="collabHelp" placeholder="Gruppen-ID"> 
-                    <small id="collabHelp" class="form-text text-muted">
-                        Eine Kollaborations-Gruppen-ID angeben 
-                    </small>
+                    <div class="row">
+						<div class="col-sm-10">
+							<input type="text" class="form-control" id="form_collab" aria-describedby="collabHelp" placeholder="Gruppen-ID"> 
+						</div>
+						<div class="col-sm-1">
+							<a role="button" id="leave" class="btn float-right btn-dark btn-block">
+								Verlassen 
+							</a>
+						</div>
+						<div class="col-sm-1">
+							<a role="button" id="collab" class="btn float-right btn-secondary btn-block">
+								Beitreten 
+							</a>
+						</div>
+						<div class="col-sm-10">
+							<small id="collabHelp" class="form-text text-muted help">
+								Eine Kollaborations-Gruppen-ID angeben 
+							</small>
+						</div>
+					</div>
                 </div>
-                <a role="button" id="leave" class="btn float-right btn-info">
-                    Verlassen 
-                </a>
-                <a role="button" id="collab" class="btn float-right btn-secondary">
-                    Beitreten 
-                </a>
             </div>
         </div>
         </div>

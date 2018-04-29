@@ -201,6 +201,7 @@ ParsonAPP.joinCollab = function() {
     var collabGroup = $('#form_collab').val().trim()
     socket.emit('collaborate', collabGroup);
     localStorage.setItem("collaborate_" + ParsonAPP.quizID, $('#form_collab').val().trim())
+    $('#form_collab').val("");
 }
 ParsonAPP.sockethandlers = {
     connect: function(msg) {
@@ -208,7 +209,7 @@ ParsonAPP.sockethandlers = {
     },
     state: function(msg) {
         ParsonAPP.loadFromStorage()
-        $('.jumbotron > h1').text(msg.name)
+        $('.col-sm-8 > h1').text(msg.name)
         $('#description').text(msg.description)
         ParsonAPP.parts = msg.parts
         ParsonAPP.js_input = msg.js_input
@@ -282,12 +283,37 @@ $(document).ready(function() {
         ParsonAPP.render()
         ParsonAPP.serializeQuiz()
     });
-    $('#collab').on('click', ParsonAPP.joinCollab);
+    ParsonAPP.group = false;
+    $('#collab').on('click', function(e) {
+    	console.log($('#form_collab').val())
+    	if ($('#form_collab').val() == "") {
+    		ParsonAPP.joinCollab();
+    		ParsonAPP.group = false;
+    		$(this).html("Betreten")
+    	} else if(!ParsonAPP.group) {
+    		ParsonAPP.joinCollab();
+	        ParsonAPP.group = true;
+    		$(this).html("Verlassen");
+    	} else if(ParsonAPP.group && !$('#form_collab').val() == "") {
+    		var tmp = $('#form_collab').val();
+    		//workaround for leaving old and join new collab
+	        $('#form_collab').val("");
+	        ParsonAPP.joinCollab();
+	        $('#form_collab').val(tmp);
+	        ParsonAPP.joinCollab();
+	        ParsonAPP.group = true;
+    		$(this).html("Verlassen");
+    	} else {
+    		$('#form_collab').val("");
+	        ParsonAPP.joinCollab();
+	        ParsonAPP.group = false;
+    		$(this).html("Beitreten");
+    	}
     //     $('#createPDF').on('click', createPDF);
-    $('#leave').on('click', function(e) {
-        $('#form_collab').val("");
-        ParsonAPP.joinCollab()
-    });
+    // $('#leave').on('click', function(e) {
+//         $('#form_collab').val("");
+//         ParsonAPP.joinCollab()
+	});
     $('#eval').on('click', function(e) {
         var initFunc = function(interpreter, scope) {
             var print = function(text) {
