@@ -326,18 +326,39 @@ io.on('connection', function(socket) {
     socket.on('collaborate', function(msg) {
         if (msg == '') {
             if (socket.collab != undefined && socket.puzzle != undefined) {
-                console.log("removing from colalblist" + socket.puzzle + "_" + socket.collab)
+                console.log("removing from collablist" + socket.puzzle + "_" + socket.collab)
                 if (collab[socket.puzzle + "_" + socket.collab].sockets.includes(socket.id)) {
                     var idx = collab[socket.puzzle + "_" + socket.collab].sockets.indexOf(socket.id)
                     collab[socket.puzzle + "_" + socket.collab].sockets.splice(idx, 1)
                 }
                 socket.emit('alert', {
                     type: 'success',
-                    message: "Du hast die Gruppe >" + socket.collab + "< verlassen!"
+                    message: "Du hast die Gruppe >" + socket.collab + "< verlassen!",
+                    timeout: 10000
                 })
                 delete socket.collab;
             }
         } else {
+            if(msg=='socket.collab') {
+                socket.emit('alert', {
+                    type: 'success',
+                    message: "Du bist schon in der Gruppe >" + msg + "<!",
+                    timeout: 10000
+                })
+                return
+            }
+            if (socket.collab != undefined && socket.puzzle != undefined) {
+                if (collab[socket.puzzle + "_" + socket.collab].sockets.includes(socket.id)) {
+                    var idx = collab[socket.puzzle + "_" + socket.collab].sockets.indexOf(socket.id)
+                    collab[socket.puzzle + "_" + socket.collab].sockets.splice(idx, 1)
+                    socket.emit('alert', {
+                        type: 'success',
+                        message: "Du hast die Gruppe >" + socket.collab + "< verlassen!",
+                        timeout: 10000
+                    })
+                }
+
+            }
             socket.collab = msg;
             if (socket.puzzle == undefined) {
                 console.log("Socket did not yet join a puzzle, ignoring")
@@ -349,7 +370,8 @@ io.on('connection', function(socket) {
                 };
                 socket.emit('alert', {
                     type: 'success',
-                    message: "Du hast die Gruppe >" + msg + "< neu erstellt!"
+                    message: "Du hast die Gruppe >" + msg + "< neu erstellt!",
+                    timeout: 10000
                 })
 
                 //request the client to send their serialization
@@ -361,7 +383,8 @@ io.on('connection', function(socket) {
                 var known_serialization = collab[socket.puzzle + "_" + socket.collab].serialization
                 socket.emit('alert', {
                     type: 'success',
-                    message: "Du bist der Gruppe >" + msg + "< beigetreten!"
+                    message: "Du bist der Gruppe >" + msg + "< beigetreten!",
+                    timeout: 10000
                 })
                 if (known_serialization != '') {
                     sendSerializationToGroup(socket.puzzle + "_" + socket.collab, known_serialization)
@@ -370,7 +393,8 @@ io.on('connection', function(socket) {
                     socket.emit('serializationRequest', '1');
                     socket.emit('alert', {
                         type: 'warning',
-                        message: "In der Gruppe existierte noch keine Lösung, daher wurde deine lokale Lösung verwendet!"
+                        message: "In der Gruppe existierte noch keine Lösung, daher wurde deine lokale Lösung verwendet!",
+                        timeout: 10000
                     })
                 }
             }

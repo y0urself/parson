@@ -58,16 +58,16 @@ $(function(){
         handle: '.btn_move',
         cancel: 'input,textarea,button:not(.btn_move),select,option',
         stop: function (event, ui){
-			var dropped = ui.item;
-			var pos = ui.position.left;
-		    if (pos > 88){
-		    	$(dropped).css('margin-left', '40px');
- 		    	refreshRowID()
-		    } else {
-		    	$(dropped).css('margin-left', '0px');
-		    	refreshRowID()
-		    }
-		}  
+            var dropped = ui.item;
+            var pos = ui.position.left;
+            if (pos > 88){
+                $(dropped).css('margin-left', '40px');
+                $(dropped).data('indent',1)
+            } else {
+                $(dropped).css('margin-left', '0px');
+                $(dropped).data('indent',0)
+            }
+        }  
     });
 });
 
@@ -81,10 +81,7 @@ function checkAppend() {
     });
     if (!empty) {
         var html = $(".form_row:first").get(0).outerHTML
-        var rowid = parseInt($(".form_row:last > .row_id").val()) + 1
-//         console.log(rowid)
         $(".form_row:last").after(html);
-        $(".form_row:last > .row_id").val(rowid)
     }
 }
 
@@ -121,7 +118,6 @@ $(document).ready(function() {
     $("#form_duplicate_all").on('click', function(e) {
         $.each($('.form_row:not(:last)'), function(k, v) {
             duplicateRow(v);
-            refreshRowID()
         });
     });
     $("#form_sort").on('click', function(e) {
@@ -147,14 +143,11 @@ $(document).ready(function() {
         $(sortedArray).prependTo("#parts_table > tbody");
     });
     $("body").on('click', '.form_delete', function(e) {
-    //TODO if I delete a 'parent', we should move the first child as new parent for this rowid ... let us change the Name for rowid ...
         $(this).closest('.form_row').remove();
-        refreshRowID()
     });
     $("body").on('click', '.form_duplicate', function(e) {
         var row = $(this).closest('.form_row');
         duplicateRow(row);
-        refreshRowID()
     });
     
     $("#form_shuffle").on('click', function(e) {
@@ -185,17 +178,23 @@ $(document).ready(function() {
         var len = $(".form_row").length
         var parts = {};
         var i = 0;
+        var last;
         while (i < len - 1) {
             key = $('.form_id').eq(i).val().trim()
             val = {
                 'name': $('.form_name').eq(i).val().trim(),
-                'js': $('.form_js').eq(i).val().trim(),
-                'row_id': $('.row_id').eq(i).val().trim()
+                'js': $('.form_js').eq(i).val().trim()
+            }
+            if($(".form_row").eq(i).data('indent')===1){
+                val.parent=last
             }
             if (key != '' || val != '')
                 parts[key] = val
-            i++
+            i++;
+            last=key;
         }
+        console.log(parts)
+        return false;
         var quiz = {
             qid: window.qid,
             name: $('#form_title').val(),
@@ -230,20 +229,6 @@ function shuffleArray(array) {
         array[i] = array[j];
         array[j] = temp;
     }
-}
-
-function refreshRowID() {
-	var len = $(".form_row").length
-	var v = 1;
-	var i = 0;
-	while (i < len - 1) {
-		if (parseInt($(".form_row").eq(i).css('margin-left')) === 0) {
-			console.log(parseInt($(".form_row").eq(i).css('margin-left')))
-			v++;
-		}
-		$('.row_id').eq(i).val(v)
-		i++
-	}
 }
 
 function areaToSingle() {
@@ -281,7 +266,6 @@ function singleToArea() {
     var i = 0;
     var input = "";
     while (i < len - 1) {
-    // TODO add the rowid in single to area and other way around ...
         console.log($('.form_id').eq(i).val());
         var key = $('.form_id').eq(i).val() || "";
         var name = $('.form_name').eq(i).val() || "";

@@ -8,15 +8,13 @@ CommonAPP.alert = function(a) {
             type: 'primary',
             message: a
         }
-    $(".alertWrapper").removeClass(function(index, className) {
-        return (className.match(/(^|\s)alert-\S+/g) || []).join(' ');
-    });
-    $('.alertWrapper').addClass('alert-top alert-' + a.type)
-    $(".alertWrapper > p").text(a.message);
-    $(".alertWrapper").show();
+    var al=$('<div class="alertWrapper alert-top alert alert-'+a.type+'" role="alert">'+
+        '<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>'+
+        '<p>'+a.message+'</p>'+
+    '</div>').appendTo('.alertContainer')
     if (a.timeout != undefined) {
         setTimeout(function() {
-            $(".alertWrapper").hide();
+            $(al).fadeOut(function(){$(al).slideUp(function(){$(al).remove()})});
         }, a.timeout);
     }
 }

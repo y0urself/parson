@@ -75,7 +75,7 @@
 }
 
 /* By https://codepen.io/leenawat/ :  https://codepen.io/leenawat/pen/ORPbqE             */
-.alertWrapper{
+.alertContainer{
     position: fixed;
     top: 5px; 
     left:2%;
@@ -84,7 +84,7 @@
 }
 
 .alert{
-    display: none;
+/*     display: none; */
 }
 
 .table-xtra-condensed > thead > tr > th,
