@@ -107,7 +107,6 @@ function duplicateRow(row) {
     $(added).find('.form_name').first().val(oldName)
     $(added).find('.form_js').first().val(oldJS)
     $(added).css('margin-left', '40px');
-    refreshRowID()
 }
 
 $(document).ready(function() {
@@ -122,6 +121,7 @@ $(document).ready(function() {
     $("#form_duplicate_all").on('click', function(e) {
         $.each($('.form_row:not(:last)'), function(k, v) {
             duplicateRow(v);
+            refreshRowID()
         });
     });
     $("#form_sort").on('click', function(e) {
@@ -148,10 +148,12 @@ $(document).ready(function() {
     });
     $("body").on('click', '.form_delete', function(e) {
         $(this).closest('.form_row').remove();
+        refreshRowID()
     });
     $("body").on('click', '.form_duplicate', function(e) {
         var row = $(this).closest('.form_row');
         duplicateRow(row);
+        refreshRowID()
     });
     
     $("#form_shuffle").on('click', function(e) {
