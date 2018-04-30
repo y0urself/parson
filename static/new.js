@@ -62,34 +62,10 @@ $(function(){
 			var pos = ui.position.left;
 		    if (pos > 88){
 		    	$(dropped).css('margin-left', '40px');
-// 		    	console.log(rowid)
-				var len = $(".form_row").length
-				console.log(len)
-				var v = 0;
-				var i = 0;
-				while (i < len - 1) {
-					if (parseInt($(".form_row").eq(i).css('margin-left')) === 0) {
-						console.log(parseInt($(".form_row").eq(i).css('margin-left')))
-						v++;
-					}
-					console.log(parseInt($(".form_row").eq(i).css('margin-left')))
-					console.log(i + " " + v)
-					$('.row_id').eq(i).val(v)
-					i++
-				}
+ 		    	refreshRowID()
 		    } else {
 		    	$(dropped).css('margin-left', '0px');
-		    	var len = $(".form_row").length
-				var v = 1;
-				var i = 0;
-				while (i < len - 1) {
-					if (parseInt($(".form_row").eq(i).css('margin-left')) === 0) {
-						console.log(parseInt($(".form_row").eq(i).css('margin-left')))
-						v++;
-					}
-					$('.row_id').eq(i).val(v)
-					i++
-				}
+		    	refreshRowID()
 		    }
 		}  
     });
@@ -131,6 +107,7 @@ function duplicateRow(row) {
     $(added).find('.form_name').first().val(oldName)
     $(added).find('.form_js').first().val(oldJS)
     $(added).css('margin-left', '40px');
+    refreshRowID()
 }
 
 $(document).ready(function() {
@@ -250,6 +227,20 @@ function shuffleArray(array) {
         array[i] = array[j];
         array[j] = temp;
     }
+}
+
+function refreshRowID() {
+	var len = $(".form_row").length
+	var v = 1;
+	var i = 0;
+	while (i < len - 1) {
+		if (parseInt($(".form_row").eq(i).css('margin-left')) === 0) {
+			console.log(parseInt($(".form_row").eq(i).css('margin-left')))
+			v++;
+		}
+		$('.row_id').eq(i).val(v)
+		i++
+	}
 }
 
 function areaToSingle() {
