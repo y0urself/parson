@@ -56,8 +56,42 @@ $(function(){
     $("#parts_table > tbody").sortable({
         items: ".form_row:not(:last-child)",
         handle: '.btn_move',
-        cancel: 'input,textarea,button:not(.btn_move),select,option'
-        
+        cancel: 'input,textarea,button:not(.btn_move),select,option',
+        stop: function (event, ui){
+			var dropped = ui.item;
+			var pos = ui.position.left;
+		    if (pos > 88){
+		    	$(dropped).css('margin-left', '40px');
+// 		    	console.log(rowid)
+				var len = $(".form_row").length
+				console.log(len)
+				var v = 0;
+				var i = 0;
+				while (i < len - 1) {
+					if (parseInt($(".form_row").eq(i).css('margin-left')) === 0) {
+						console.log(parseInt($(".form_row").eq(i).css('margin-left')))
+						v++;
+					}
+					console.log(parseInt($(".form_row").eq(i).css('margin-left')))
+					console.log(i + " " + v)
+					$('.row_id').eq(i).val(v)
+					i++
+				}
+		    } else {
+		    	$(dropped).css('margin-left', '0px');
+		    	var len = $(".form_row").length
+				var v = 1;
+				var i = 0;
+				while (i < len - 1) {
+					if (parseInt($(".form_row").eq(i).css('margin-left')) === 0) {
+						console.log(parseInt($(".form_row").eq(i).css('margin-left')))
+						v++;
+					}
+					$('.row_id').eq(i).val(v)
+					i++
+				}
+		    }
+		}  
     });
 });
 
@@ -71,7 +105,10 @@ function checkAppend() {
     });
     if (!empty) {
         var html = $(".form_row:first").get(0).outerHTML
+        var rowid = parseInt($(".form_row:last > .row_id").val()) + 1
+//         console.log(rowid)
         $(".form_row:last").after(html);
+        $(".form_row:last > .row_id").val(rowid)
     }
 }
 
@@ -93,6 +130,7 @@ function duplicateRow(row) {
     $(added).find('.form_id').first().val(newID)
     $(added).find('.form_name').first().val(oldName)
     $(added).find('.form_js').first().val(oldJS)
+    $(added).css('margin-left', '40px');
 }
 
 $(document).ready(function() {
@@ -138,6 +176,7 @@ $(document).ready(function() {
         var row = $(this).closest('.form_row');
         duplicateRow(row);
     });
+    
     $("#form_shuffle").on('click', function(e) {
         if (url[url.length - 1] == 'edit') {
             if (!window.confirm("Achtung! Wenn Nutzer das Quiz schon mal bearbeitet haben, macht das 'mischen' ihre Lösung komplett kaputt, da die IDs neu zu Codezeilen zugeordnet werden. Trotzdem mischen?"))
@@ -158,6 +197,7 @@ $(document).ready(function() {
         e.preventDefault();
         return false;
     });
+    
     $("#form_add").on('click', function(e) {
         if ($('#form_codearea').val().trim() != '') {
             areaToSingle()
@@ -169,7 +209,8 @@ $(document).ready(function() {
             key = $('.form_id').eq(i).val().trim()
             val = {
                 'name': $('.form_name').eq(i).val().trim(),
-                'js': $('.form_js').eq(i).val().trim()
+                'js': $('.form_js').eq(i).val().trim(),
+                'row_id': $('.row_id').eq(i).val().trim()
             }
             if (key != '' || val != '')
                 parts[key] = val
@@ -246,6 +287,7 @@ function singleToArea() {
     var i = 0;
     var input = "";
     while (i < len - 1) {
+    // TODO add the rowid in single to area and other way around ...
         console.log($('.form_id').eq(i).val());
         var key = $('.form_id').eq(i).val() || "";
         var name = $('.form_name').eq(i).val() || "";
