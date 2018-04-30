@@ -147,6 +147,7 @@ $(document).ready(function() {
         $(sortedArray).prependTo("#parts_table > tbody");
     });
     $("body").on('click', '.form_delete', function(e) {
+    //TODO if I delete a 'parent', we should move the first child as new parent for this rowid ... let us change the Name for rowid ...
         $(this).closest('.form_row').remove();
         refreshRowID()
     });
