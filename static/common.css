@@ -1,7 +1,18 @@
 .cardd {
-    max-width:900px;
+    max-width:1100px;
     border:3px solid #0a0a0a;
-    min-height: 100px;
+    min-height: 150px;
+    min-width: 100px;
+    line-height: 1;
+    border-radius: 10px;
+    margin: 0 auto;
+    padding:15px;
+}
+
+.card1 {
+    max-width:1100px;
+    border:3px solid #0a0a0a;
+    min-height: 50px;
     min-width: 100px;
     line-height: 1;
     border-radius: 10px;
@@ -60,7 +71,7 @@
 .monotextarea, #monosp
 {
     font-family: monospace !important;
-    font-size-adjust;
+    font-size: 120%;
 }
 
 /* By https://codepen.io/leenawat/ :  https://codepen.io/leenawat/pen/ORPbqE             */

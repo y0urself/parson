@@ -2,6 +2,7 @@
     <head>
         {{>html_head_top}}
         <script src="/new.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="/layout.css" />
             <title>
             Parson
         </title>
@@ -11,16 +12,25 @@
         .puzzletable td {margin: 0; padding: 0;}
     </style>
 <body>
+    <header>
+		<div class="container-fluid">
+			<div class="row">
+				<div id="backbtn" class="col-sm-2">&nbsp;
+					<a role="button" class="btn btn-dark" href="/puzzles">
+						Zurück 
+					</a>
+				</div>
+				<div class="col-sm-8">
+					<h1 align="center">
+						Neues Parson's Puzzle erstellen
+					</h1>
+				</div>
+			</div>
+		</div>
+    </header>
     {{>fancy_alert}}
-    <div class="container">
+    <div id="content" class="container-fluid">
         <div class="jumbotron">
-            <a href="/puzzles">Zurück</a>
-            <h1>
-                Parson's Puzzles
-            </h1>
-            <p>
-                Dies ist eine Liste der auf dem Server hinterlegten Puzzles
-            </p>
             <hr class="my-4"> 
             <form>
                 <div class="form-group">
@@ -129,14 +139,14 @@
                     </ul>
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
-                        	Manuelle Eingabe von Parson-Teilen
                             <table class="table table-xtra-condensed parts_table" id="parts_table">
                                 <tbody>
-                                    <tr class="form_row d-flex">
+                                    <tr class="form_row d-flex" style="margin-left: 0px;">
+                                    	<input class="row_id" type="hidden" value="1">
                                         <td class="col-sm-2">
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
-                                                    <button class="btn btn-light btn_move" type="button">
+                                                    <button class="btn btn-dark btn_move" type="button">
                                                         <span class="oi" data-glyph="elevator" title="elevator" aria-hidden="true"></span>
                                                     </button>
                                                 </div>
@@ -150,10 +160,10 @@
                                         <div class="input-group">
                                             <input type="text" class="form-control form_js monotextarea" placeholder="Javascript-Equivalent" aria-label="">
                                             <div class="input-group-append">
-                                                <button class="btn btn-info form_duplicate" type="button">
+                                                <button class="btn btn-dark form_duplicate" type="button">
                                                     <span class="oi" data-glyph="plus" title="plus" aria-hidden="true"></span>
                                                 </button>
-                                                <button class="btn btn-info form_delete" type="button">
+                                                <button class="btn btn-dark form_delete" type="button">
                                                     <span class="oi" data-glyph="delete" title="delete" aria-hidden="true"></span>
                                                 </button>
                                             </div>
@@ -185,19 +195,28 @@
 								</div>
 							</div>
  -->
-                            <a class="btn btn-primary" id="form_shuffle">
-                                Bezeichner zufällig neu vergeben
-                            </a>
-                            <a class="btn btn-primary" id="form_duplicate_all">
-                                Alle zeilen klonen
-                            </a>
-                            </a>
-                            <a class="btn btn-primary" id="form_sort">
-                                Zeilen nach Bezeichner sortieren
-                            </a>
-                            <small id="single" class="form-text text-muted">
-                        			Listenelemente können per Drag and Drop verschoben werden.
-                    		</small>
+ 							<div class="row">
+ 								<div class="col-sm-6">
+									<small id="single" class="form-text text-muted">
+                        				Manuelle eingabe Listenelemente können per Drag and Drop verschoben werden.
+                    				</small>
+								</div>
+								<div class="col-sm-2">
+									<a class="btn btn-secondary btn-block" id="form_shuffle">
+                                		Bezeichner zufällig neu vergeben
+                            		</a>
+								</div>
+								<div class="col-sm-2">
+									<a class="btn btn-secondary btn-block" id="form_duplicate_all">
+                                	Alle zeilen klonen
+                            		</a>
+								</div>
+								<div class="col-sm-2">
+									<a class="btn btn-secondary btn-block" id="form_sort">
+                                	Zeilen nach Bezeichner sortieren
+                            		</a>
+								</div>     
+							</div>                                
                         </div>                        
                         <div class="tab-pane fade" id="multiple" role="tabpanel" aria-labelledby="multiple-tab">
                             <div class="form-group">
@@ -221,7 +240,7 @@
                     </div>
                 </div>
 
-                <button type=submit class="btn btn-primary" id="form_add">
+                <button type=submit class="btn btn-secondary" id="form_add">
                     Submit
                 </button>
             </form>
