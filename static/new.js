@@ -247,6 +247,16 @@ function areaToSingle() {
         if (val == '') continue
         vals = val.split('|');
         if (vals.length > 1) {
+            $('.form_row').eq(i).data('indent',0).css('margin-left','0px')
+            while(vals[0][0]=='_' || vals[0][0]=='*'){
+                if(vals[0][0]=='_') {
+                    $('.form_row').eq(i).data('indent',1).css('margin-left','40px')
+                }
+                if(vals[0][0]=='*') {
+                    $('.form_optional').eq(i).attr('checked','checked')
+                }
+                vals[0]=vals[0].substr(1)
+            }
             $('.form_name').eq(i).val(vals[1])
             $('.form_id').eq(i).val(vals[0])
             if (vals.length > 2) {
@@ -272,8 +282,15 @@ function singleToArea() {
     var i = 0;
     var input = "";
     while (i < len - 1) {
+        var keyAppend='';
+        if($('.form_optional').eq(i).is(':checked')){
+            keyAppend+='*'
+        }
+        if($('.form_row').eq(i).data('indent')==1){
+            keyAppend+='_'
+        }
         console.log($('.form_id').eq(i).val());
-        var key = $('.form_id').eq(i).val() || "";
+        var key = keyAppend+$('.form_id').eq(i).val() || "";
         var name = $('.form_name').eq(i).val() || "";
         var js = $('.form_js').eq(i).val() || "";
         input += key + "|" + name + "|" + js + "\n";

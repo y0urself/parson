@@ -121,6 +121,20 @@ ParsonAPP.serializeQuiz = function(ignoreHistory) {
     js += ';' + ParsonAPP.js_suf;
     $('#serialized').text(lii);
 
+    var unused=Object.keys(ParsonAPP.parts).filter( function( el ) {
+        //here, check if it's optional
+        return !(   ids.includes( el ) || 
+                    ids.includes(ParsonAPP.parts[el].parent) || 
+                    (
+                        ParsonAPP.parts[el].children.some(function(k){
+                            return ids.includes(k)
+                        })
+                    )
+                );
+    } );
+    unused=unused.filter(function(el) {
+        return !unused.includes(ParsonAPP.parts[el].parent)
+    })
     $('#js_show').val(js_beautify(js));
     duplicates = [];
     for (var i = 1; i < ids.length; i++) {
@@ -130,13 +144,18 @@ ParsonAPP.serializeQuiz = function(ignoreHistory) {
             }
         }
     }
-    console.log(duplicates)
     duplicates.sort();
     $("#warnings").html("");
     if (!duplicates.length == 0) {
         console.log("duplicates detected");
         for (var i in duplicates) {
             var str = "Das Paar <span class=monotextarea>(" + duplicates[i][0] + "," + duplicates[i][1] + ")</span> wird doppelt verwendet</br>";
+            $("#warnings").append(str);
+        }
+    }
+    if (!unused.length == 0) {
+        for (var i in unused) {
+            var str = "Das Element " + unused[i] + ((ParsonAPP.parts[unused[i]].children.length==0 && ParsonAPP.parts[unused[i]].parent==undefined) ? '' : " (oder Alternativen)")+" wurde nicht genutzt.</br>";
             $("#warnings").append(str);
         }
     }
@@ -160,7 +179,6 @@ ParsonAPP.doNewDraggable = function() {
         receive: ParsonAPP.doLevel
     });
 }
-
 ParsonAPP.loadFromStorage = function() {
     if (!ParsonAPP.loadedfromstorage) {
         if (localStorage.getItem("quizstate_" + ParsonAPP.quizID) != undefined) {
@@ -179,12 +197,14 @@ ParsonAPP.undo = function() {
     if (ParsonAPP.undoHistory.length >= 1) {
         ParsonAPP.redoHistory.push(ParsonAPP.serialized)
         ParsonAPP.setSerialized(ParsonAPP.undoHistory.pop())
+        ParsonAPP.serializeQuiz(true)
     }
 }
 ParsonAPP.redo = function() {
     if (ParsonAPP.redoHistory.length >= 1) {
         ParsonAPP.undoHistory.push(ParsonAPP.serialized)
         ParsonAPP.setSerialized(ParsonAPP.redoHistory.pop())
+        ParsonAPP.serializeQuiz(true)
     }
 }
 ParsonAPP.setSerialized = function(serialized, send) {
@@ -213,6 +233,16 @@ ParsonAPP.sockethandlers = {
         $('.col-sm-8 > h1').text(msg.name)
         $('#description').text(msg.description)
         ParsonAPP.parts = msg.parts
+//         enrich parts by their children
+        for(var k in ParsonAPP.parts) {
+            ParsonAPP.parts[k].children = ParsonAPP.parts[k].children || []
+        }
+        for(var k in ParsonAPP.parts) {
+            if(ParsonAPP.parts[k].parent!=undefined) {
+                var parent=ParsonAPP.parts[k].parent
+                ParsonAPP.parts[parent].children.push(k)
+            }
+        }
         ParsonAPP.js_input = msg.js_input
         $('#js_input').val(msg.js_input)
         ParsonAPP.js_pre = msg.js_pre

@@ -147,7 +147,7 @@
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
                                                     <button class="btn btn-dark btn_move" type="button">
-                                                        <span class="oi" data-glyph="elevator" title="elevator" aria-hidden="true"></span>
+                                                        <span class="oi" data-glyph="move" title="move" aria-hidden="true"></span>
                                                     </button>
                                                 </div>
                                                 <input type="text" class="form-control form_id" placeholder="Bezeichner">
@@ -160,6 +160,9 @@
                                         <div class="input-group">
                                             <input type="text" class="form-control form_js monotextarea" placeholder="Javascript-Equivalent" aria-label="">
                                             <div class="input-group-append">
+                                                <div class="input-group-text">
+                                                    <input class="form_optional" type="checkbox">
+                                                </div>
                                                 <button class="btn btn-dark form_duplicate" type="button">
                                                     <span class="oi" data-glyph="plus" title="plus" aria-hidden="true"></span>
                                                 </button>
@@ -198,7 +201,8 @@
  							<div class="row">
  								<div class="col-sm-6">
 									<small id="single" class="form-text text-muted">
-                        				Manuelle eingabe Listenelemente können per Drag and Drop verschoben werden.
+                        				Manuelle eingabe Listenelemente können per Drag and Drop verschoben werden.<br/>
+                        				Wird der Haken in einer Zeile gesetzt, gilt das entsprechende Teil als Optional
                     				</small>
 								</div>
 								<div class="col-sm-2">
