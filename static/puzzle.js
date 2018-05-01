@@ -380,8 +380,9 @@ $(document).ready(function() {
         window.startrun = Date.now()
 
         function nextStep(times) {
-            var next=false;
+            var next;
             for(var i=0;i<(times || 10);i++){
+                next=false
                 try {
                     if (myInterpreter.step()) {
                         $('#js_steps').val(window.steps++);
