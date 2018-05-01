@@ -379,28 +379,26 @@ $(document).ready(function() {
         window.steps = 0
         window.startrun = Date.now()
 
-        function nextStep(launchItSelf) {
-            if(launchItSelf!==false){
-                //this does two steps per ticked timeout, to speed up this a little bit.
-                //todo: add a slider for speed, which may change both the timeout
-                //(to make it yet more slow) as well the no. of iterations here
-                //(to make it faster than timeouts allow)
-                //todo: remove double output
-                //nextStep(false);
-            }
-            try {
-                if (myInterpreter.step()) {
-                    $('#js_steps').val(window.steps++);
-                    if(launchItSelf!==false){
-                        ParsonAPP.stepper = window.setTimeout(nextStep, 1);
+        function nextStep(times) {
+            var next=false;
+            for(var i=0;i<(times || 10);i++){
+                try {
+                    if (myInterpreter.step()) {
+                        $('#js_steps').val(window.steps++);
+                        next=true
+                    } else {
+                        $('#js_eval').val($('#js_eval').val() + "---------------\nFinished in " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
+                        delete ParsonAPP.stepper
+                        break;
                     }
-                } else {
-                    $('#js_eval').val($('#js_eval').val() + "---------------\nFinished in " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
+                } catch (err) {
                     delete ParsonAPP.stepper
+                    $('#js_eval').val($('#js_eval').val() + "---------------\nAborted after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n" + JSON.stringify(err.message) + "\n---------------\n")
+                    break;
                 }
-            } catch (err) {
-                delete ParsonAPP.stepper
-                $('#js_eval').val($('#js_eval').val() + "---------------\nAborted after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n" + JSON.stringify(err.message) + "\n---------------\n")
+            }
+            if(next){
+                ParsonAPP.stepper = window.setTimeout(nextStep, 1);
             }
         }
         nextStep();
