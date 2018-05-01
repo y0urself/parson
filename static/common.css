@@ -95,3 +95,7 @@
 .table-xtra-condensed > tfoot > tr > td {
     padding: 2px;
 }
+
+.optional {
+    border-style: dashed;
+}

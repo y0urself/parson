@@ -36,7 +36,8 @@ ParsonAPP.render = function() {
             'id': unser[k],
             'name': ParsonAPP.parts[unser[k]].name,
             'level': level,
-            'js': ParsonAPP.parts[unser[k]].js
+            'js': ParsonAPP.parts[unser[k]].js,
+            'optional':  ParsonAPP.parts[unser[k]].optional,
         });
     }
     for (var k in ParsonAPP.parts) {
@@ -53,13 +54,13 @@ ParsonAPP.render = function() {
     }
     var bucketHTML = ''
     for (var k in bucketParts) {
-        bucketHTML += '<div class=part data-id=' + k + '><div class=identifier>' + k + '</div><div class="title monotextarea">' + bucketParts[k].name + '</div></div>';
+        bucketHTML += '<div class="part'+(bucketParts[k].optional ? ' optional' : '')+'" data-id=' + k + '><div class=identifier>' + k + '</div><div class="title monotextarea">' + bucketParts[k].name + '</div></div>';
     }
     $('#bucket').html(bucketHTML);
 
     var playHTML = ''
     for (var k in playParts) {
-        playHTML += '<div class=part data-id="' + playParts[k].id + '" data-level="' + playParts[k].level + '"><div class=identifier>' + playParts[k].id + '</div><div class="title monotextarea">' + playParts[k].name + '</div></div>';
+        playHTML += '<div class="part'+(playParts[k].optional ? ' optional' : '')+'" data-id="' + playParts[k].id + '" data-level="' + playParts[k].level + '"><div class=identifier>' + playParts[k].id + '</div><div class="title monotextarea">' + playParts[k].name + '</div></div>';
     }
     $('#play').html(playHTML);
     ParsonAPP.renderLevel()
@@ -122,8 +123,8 @@ ParsonAPP.serializeQuiz = function(ignoreHistory) {
     $('#serialized').text(lii);
 
     var unused=Object.keys(ParsonAPP.parts).filter( function( el ) {
-        //here, check if it's optional
-        return !(   ids.includes( el ) || 
+        return !(
+                    ids.includes( el ) || 
                     ids.includes(ParsonAPP.parts[el].parent) || 
                     (
                         ParsonAPP.parts[el].children.some(function(k){
@@ -133,7 +134,7 @@ ParsonAPP.serializeQuiz = function(ignoreHistory) {
                 );
     } );
     unused=unused.filter(function(el) {
-        return !unused.includes(ParsonAPP.parts[el].parent)
+        return !(unused.includes(ParsonAPP.parts[el].parent) || ParsonAPP.parts[el].optional==true)
     })
     $('#js_show').val(js_beautify(js));
     duplicates = [];

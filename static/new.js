@@ -30,6 +30,9 @@ function fillParts() {
         $('.form_id').eq(k).val(i)
         $('.form_name').eq(k).val(window.parts[i].name)
         $('.form_js').eq(k).val(window.parts[i].js)
+        if(window.parts[i].optional===true) {
+            $('.form_optional').eq(k).prop('checked',true)
+        }
         if(window.parts[i].parent!==undefined) {
             $('.form_row').eq(k).data('indent',1)
             $('.form_row').eq(k).css('margin-left', '40px');
@@ -191,7 +194,8 @@ $(document).ready(function() {
             key = $('.form_id').eq(i).val().trim()
             val = {
                 'name': $('.form_name').eq(i).val().trim(),
-                'js': $('.form_js').eq(i).val().trim()
+                'js': $('.form_js').eq(i).val().trim(),
+                'optional': $('.form_optional').eq(i).is(':checked')
             }
             if($(".form_row").eq(i).data('indent')===1){
                 val.parent=last
@@ -248,12 +252,13 @@ function areaToSingle() {
         vals = val.split('|');
         if (vals.length > 1) {
             $('.form_row').eq(i).data('indent',0).css('margin-left','0px')
+            $('.form_optional').eq(i).prop('checked',false)
             while(vals[0][0]=='_' || vals[0][0]=='*'){
                 if(vals[0][0]=='_') {
                     $('.form_row').eq(i).data('indent',1).css('margin-left','40px')
                 }
                 if(vals[0][0]=='*') {
-                    $('.form_optional').eq(i).attr('checked','checked')
+                    $('.form_optional').eq(i).prop('checked',true)
                 }
                 vals[0]=vals[0].substr(1)
             }
