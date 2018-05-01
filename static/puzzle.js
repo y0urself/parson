@@ -360,17 +360,24 @@ $(document).ready(function() {
             $('#js_eval').val($('#js_eval').val() + "---------------\nAborted by user after " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
             delete ParsonAPP.stepper
         }
-        var myInterpreter = new Interpreter(
-                "var js_input=" + $('#js_input').val() + ";"+
-                "function print(a){"+
-                "if(typeof a == 'string'){"+
-                " print_internal(a);"+
-                "}else{"+
-                " print_internal(JSON.stringify(a))"+
-                "}" + 
-                "};" + 
-                $('#js_show').val(), 
-                initFunc);
+        try{
+            var myInterpreter = new Interpreter(
+                    "var js_input=" + $('#js_input').val() + ";"+
+                    "function print(a){"+
+                    "if(typeof a == 'string'){"+
+                    " print_internal(a);"+
+                    "}else{"+
+                    " print_internal(JSON.stringify(a))"+
+                    "}" + 
+                    "};" + 
+                    $('#js_show').val(), 
+                    initFunc);
+        } catch(err) {
+            $('#js_eval').val($('#js_eval').val() + "---------------\nCan't run code: Syntax Error:" + JSON.stringify(err.message) + "\n---------------\n")
+        }
+        if(myInterpreter===undefined){
+            return false
+        }
         window.steps = 0
         window.startrun = Date.now()
 
