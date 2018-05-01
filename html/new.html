@@ -113,7 +113,7 @@
                     <label for="form_js_pre">
                         Javascript-Prefix
                     </label>
-                    <input type="text" class="form-control monotextarea" id="form_js_pre" placeholder="var feld=js_input">
+                    <textarea class="form-control monotextarea" id="form_js_pre" rows=1 placeholder="var feld=js_input"></textarea>
                     <small id="form_js_pre" class="form-text text-muted">
                         Dies ist der Javascript-Code, der _vor_ den Puzzlestücken eingefügt wird.<br/>
                         Die Methode "print(text)" gibt etwas aus.
@@ -201,8 +201,9 @@
  							<div class="row">
  								<div class="col-sm-6">
 									<small id="single" class="form-text text-muted">
-                        				Manuelle eingabe Listenelemente können per Drag and Drop verschoben werden.<br/>
-                        				Wird der Haken in einer Zeile gesetzt, gilt das entsprechende Teil als Optional
+                        				Listenelemente können per Drag and Drop verschoben werden.<br/>
+                        				Eingerückte Elemente gelten als "Alternativelemente" zum jeweils vorangegangenen, nicht eingerückten Element.<br/>
+                        				Wird der Haken in einer Zeile gesetzt, gilt das entsprechende Teil als Optional<br/>
                     				</small>
 								</div>
 								<div class="col-sm-2">
@@ -231,7 +232,10 @@
                                 <small id="multiple" class="form-text text-muted">
                         			In diesem Textfeld kann ein ganzes Parson Puzzle eingegeben werden. Hierfür gibt es verschiedene Möglichkeiten:<br>
                         			1. <span id="monosp">Programmcode</span> - Der Puzzle-Code wird zeilenweise zu Parson-Teilen geschnitten, der Bezeichner hierfür werden generiert.<br>
-                        			2. <span id="monosp">Bezeichner | Programmcode | Javascript-Equivalent</span> - Hier werden alle Felder gefüllt, separiert durch |.
+                        			2. <span id="monosp">Bezeichner | Programmcode | Javascript-Equivalent</span> - Hier werden alle Felder gefüllt, separiert durch |.<br>
+                        			Bei der 2. Variante kann genutzt werden:<br/>
+                        			&nbsp;&nbsp;-ein vorangestellter <span id="monosp">_</span> (Unterstrich), um ein Element dem vorangegangenen Zeile als "Alternative" zugeordnet werden<br/>
+                        			&nbsp;&nbsp;-ein vorangestellter <span id="monosp">*</span> (Stern), um ein Element als Optional zu kennzeichnen<br/>
                     			</small>
                     			<div class="form-check">
                         			<label class="form-check-label" for="shuffleArr">

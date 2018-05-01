@@ -374,8 +374,6 @@ $(document).ready(function() {
                     initFunc);
         } catch(err) {
             $('#js_eval').val($('#js_eval').val() + "---------------\nCan't run code: Syntax Error:" + JSON.stringify(err.message) + "\n---------------\n")
-        }
-        if(myInterpreter===undefined){
             return false
         }
         window.steps = 0
@@ -387,7 +385,8 @@ $(document).ready(function() {
                 //todo: add a slider for speed, which may change both the timeout
                 //(to make it yet more slow) as well the no. of iterations here
                 //(to make it faster than timeouts allow)
-                nextStep(false);
+                //todo: remove double output
+                //nextStep(false);
             }
             try {
                 if (myInterpreter.step()) {

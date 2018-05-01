@@ -131,6 +131,7 @@ $(document).ready(function() {
             duplicateRow(v);
         });
     });
+//     autosize($('#form_js_pre'))
     $("#form_sort").on('click', function(e) {
         var sortedArray = $(".form_row:not(:last)").get().sort(function(aElm, bElm) {
             /* What a nice implementation! Wow. Thanks to https://stackoverflow.com/a/15479354/1154316 */
