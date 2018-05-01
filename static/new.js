@@ -30,6 +30,12 @@ function fillParts() {
         $('.form_id').eq(k).val(i)
         $('.form_name').eq(k).val(window.parts[i].name)
         $('.form_js').eq(k).val(window.parts[i].js)
+        if(window.parts[i].parent!==undefined) {
+            $('.form_row').eq(k).data('indent',1)
+            $('.form_row').eq(k).css('margin-left', '40px');
+        }else{
+            $('.form_row').eq(k).data('indent',0)
+        }
         checkAppend();
         k++
     }
@@ -58,6 +64,7 @@ $(function(){
         handle: '.btn_move',
         cancel: 'input,textarea,button:not(.btn_move),select,option',
         stop: function (event, ui){
+//         #TODO: Check that this isn't the first element, as it can't have parents
             var dropped = ui.item;
             var pos = ui.position.left;
             if (pos > 88){
@@ -104,6 +111,7 @@ function duplicateRow(row) {
     $(added).find('.form_name').first().val(oldName)
     $(added).find('.form_js').first().val(oldJS)
     $(added).css('margin-left', '40px');
+    $(added).closest('.form_row').data('indent',1)
 }
 
 $(document).ready(function() {
@@ -193,8 +201,6 @@ $(document).ready(function() {
             i++;
             last=key;
         }
-        console.log(parts)
-        return false;
         var quiz = {
             qid: window.qid,
             name: $('#form_title').val(),

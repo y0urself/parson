@@ -114,7 +114,7 @@ ParsonAPP.serializeQuiz = function(ignoreHistory) {
         lii += idt + ' ';
         js += ParsonAPP.parts[idt].js + '\n';
         lastLevel = lvl;
-        ids.push(idt.replace(/[a-zA-Z]|_[0-9]/, ""));
+        ids.push(idt);
     });
     lii += Array(lastLevel + 1).join("} ");
     js += Array(lastLevel + 1).join("}");
@@ -122,20 +122,21 @@ ParsonAPP.serializeQuiz = function(ignoreHistory) {
     $('#serialized').text(lii);
 
     $('#js_show').val(js_beautify(js));
-
-    ids.sort();
     duplicates = [];
     for (var i = 1; i < ids.length; i++) {
-        if (ids[i] == ids[i - 1]) {
-            duplicates.push(ids[i]);
+        if(ParsonAPP.parts[ids[i]].parent!==undefined){
+            if(ids.includes(ParsonAPP.parts[ids[i]].parent)){
+                duplicates.push([ParsonAPP.parts[ids[i]].parent,ids[i]]);
+            }
         }
     }
+    console.log(duplicates)
     duplicates.sort();
     $("#warnings").html("");
     if (!duplicates.length == 0) {
         console.log("duplicates detected");
         for (var i in duplicates) {
-            var str = "Das Element " + duplicates[i] + " wird doppelt verwendet</br>";
+            var str = "Das Paar <span class=monotextarea>(" + duplicates[i][0] + "," + duplicates[i][1] + ")</span> wird doppelt verwendet</br>";
             $("#warnings").append(str);
         }
     }
@@ -342,11 +343,20 @@ $(document).ready(function() {
         window.steps = 0
         window.startrun = Date.now()
 
-        function nextStep() {
+        function nextStep(launchItSelf) {
+            if(launchItSelf!==false){
+                //this does two steps per ticked timeout, to speed up this a little bit.
+                //todo: add a slider for speed, which may change both the timeout
+                //(to make it yet more slow) as well the no. of iterations here
+                //(to make it faster than timeouts allow)
+                nextStep(false);
+            }
             try {
                 if (myInterpreter.step()) {
                     $('#js_steps').val(window.steps++);
-                    ParsonAPP.stepper = window.setTimeout(nextStep, 1);
+                    if(launchItSelf!==false){
+                        ParsonAPP.stepper = window.setTimeout(nextStep, 1);
+                    }
                 } else {
                     $('#js_eval').val($('#js_eval').val() + "---------------\nFinished in " + window.steps + " steps (" + (Date.now() - window.startrun) + "ms)\n---------------\n")
                     delete ParsonAPP.stepper
