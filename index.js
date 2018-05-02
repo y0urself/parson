@@ -7,11 +7,14 @@ var io = require('socket.io')(http);
 var quiz = require('./quiz.js');
 var mustache = require('mustache');
 var mustacheExpress = require('mustache-express');
+var auth = require('http-auth');
 var fs = require('fs');
 const passwordHash = require('password-hash');
 
 const use_dynamo = process.env.DYNAMO === 'yes'
 const master_pw = process.env.MASTER_PW || false
+const auth_admin = process.env.AUTH_ADMIN || false
+const auth_pass = process.env.AUTH_PASS || false
 
 if (use_dynamo) {
     var AWS = require('aws-sdk');
@@ -147,6 +150,13 @@ http.listen(port, function() {
     console.log('listening on *:' + port);
 });
 
+if(auth_admin!==false) {
+    app.use(auth.connect(auth.basic({
+            realm: "Parson Area."}, (username, password, callback) => { 
+                callback(username === auth_admin && password === auth_pass);
+            })
+    ));
+}
 app.engine('html', mustacheExpress());
 app.set('view engine', 'html');
 app.set('views', __dirname + '/html');

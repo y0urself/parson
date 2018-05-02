@@ -12,8 +12,9 @@
   },
   "dependencies": {
     "aws-sdk": "^2.227.1",
-    "express": "^4.13.3",
+    "express": "^4.16.3",
     "guid": "*",
+    "http-auth": "^3.2.3",
     "mustache": "^2.3.0",
     "mustache-express": "*",
     "node-persist": "2.1.0",
