@@ -303,6 +303,13 @@ io.on('connection', function(socket) {
         }
     });
 
+    socket.on('list',function(msg) {
+        var sendpuzzles = [];
+        for (var k in puzzles) {
+            if (puzzles[k].hidePuzzle !== true)
+                sendpuzzles.push(puzzles[k])
+        }
+    });
     socket.on('delete', function(msg) {
         if (puzzles[msg.qid] != undefined) {
             if ((master_pw != false && msg.password == master_pw) || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password, puzzles[msg.qid].password))) {

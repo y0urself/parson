@@ -194,6 +194,11 @@ ParsonAPP.loadFromStorage = function() {
     }
     ParsonAPP.loadedfromstorage = true;
 }
+ParsonAPP.saveExistenceToStorage = function() {
+    var puzzles=JSON.parse(localStorage.getItem("puzzles")) || {}
+    puzzles[ParsonAPP.quizID]=ParsonAPP.puzzleTitle
+    localStorage.setItem("puzzles", JSON.stringify(puzzles))
+}
 ParsonAPP.undo = function() {
     if (ParsonAPP.undoHistory.length >= 1) {
         ParsonAPP.redoHistory.push(ParsonAPP.serialized)
@@ -231,6 +236,8 @@ ParsonAPP.sockethandlers = {
     },
     state: function(msg) {
         ParsonAPP.loadFromStorage()
+        ParsonAPP.puzzleTitle=msg.name
+        ParsonAPP.saveExistenceToStorage()
         $('.col-sm-8 > h1').text(msg.name)
         $('#description').text(msg.description)
         ParsonAPP.parts = msg.parts

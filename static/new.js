@@ -11,6 +11,14 @@ if (url[url.length - 1] == 'duplicate') {
 socket.on('state', function(a) {
     window.parts = a.parts
     fillParts()
+    if(url[url.length - 1] == 'edit'){
+        $('#title_role').text("Puzzle >"+a.name+"< bearbeiten")
+        $('#back_role').attr('href','/puzzles/'+window.qid)
+    }
+    if(url[url.length - 1] == 'duplicate'){
+        $('#title_role').text("Kopie von >"+a.name+"< anlegen")
+        $('#back_role').attr('href','/puzzles/'+window.qid)
+    }
     $('#form_title').val(a.name)
     $('#form_description').val(a.description)
     $('#form_js_input').val(a.js_input)
