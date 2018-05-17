@@ -278,7 +278,7 @@ io.on('connection', function(socket) {
     });
 
     socket.on('new', function(msg) {
-        var q = new quiz(msg.name, msg.description, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, msg.disableCollab, msg.disableJS, msg.hidePuzzle, passwordHash.generate(msg.password))
+        var q = new quiz(msg.name, msg.description, msg.parts, msg.order, msg.js_input, msg.js_pre, msg.js_suf, msg.disableCollab, msg.disableJS, msg.hidePuzzle, passwordHash.generate(msg.password))
         puzzles[q.id] = q
         socket.emit('redirect', '/puzzles/' + q.id)
         dynamo.put();
@@ -288,7 +288,7 @@ io.on('connection', function(socket) {
     socket.on('edit', function(msg) {
         if (puzzles[msg.qid] != undefined) {
             if ((master_pw != false && msg.password == master_pw) || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password, puzzles[msg.qid].password))) {
-                var q = new quiz(msg.name, msg.description, msg.parts, msg.js_input, msg.js_pre, msg.js_suf, msg.disableCollab, msg.disableJS, msg.hidePuzzle, puzzles[msg.qid].password, msg.qid)
+                var q = new quiz(msg.name, msg.description, msg.parts, msg.order, msg.js_input, msg.js_pre, msg.js_suf, msg.disableCollab, msg.disableJS, msg.hidePuzzle, puzzles[msg.qid].password, msg.qid)
                 puzzles[q.id] = q
                 socket.emit('redirect', '/puzzles/' + q.id)
                 dynamo.put();

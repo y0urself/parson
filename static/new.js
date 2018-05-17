@@ -10,6 +10,7 @@ if (url[url.length - 1] == 'duplicate') {
 }
 socket.on('state', function(a) {
     window.parts = a.parts
+    window.order = a.order
     fillParts()
     $('#form_title').val(a.name)
     $('#form_description').val(a.description)
@@ -26,7 +27,12 @@ socket.on('state', function(a) {
 
 function fillParts() {
     var k = 0;
-    for (var i in window.parts) {
+    var iterateKeys=Object.keys(window.parts)
+    if(typeof window.order != 'undefined' && (window.order.length == iterateKeys.length)){
+        iterateKeys=window.order
+    }
+    for (var j in iterateKeys) {
+        var i=iterateKeys[j]
         $('.form_id').eq(k).val(i)
         $('.form_name').eq(k).val(window.parts[i].name)
         $('.form_js').eq(k).val(window.parts[i].js)
@@ -191,6 +197,7 @@ $(document).ready(function() {
         var parts = {};
         var i = 0;
         var last;
+        var order=[]
         while (i < len - 1) {
             key = $('.form_id').eq(i).val().trim()
             val = {
@@ -203,6 +210,7 @@ $(document).ready(function() {
             }
             if (key != '' || val != '')
                 parts[key] = val
+                order.push(key)
             i++;
             last=key;
         }
@@ -217,7 +225,8 @@ $(document).ready(function() {
             js_suf: $('#form_js_suf').val(),
             disableCollab: $('#disableCollab').is(':checked'),
             disableJS: $('#disableJS').is(':checked'),
-            hidePuzzle: $('#hidePuzzle').is(':checked')
+            hidePuzzle: $('#hidePuzzle').is(':checked'),
+            order: order
         };
         if($('#savePassword').is(':checked')) {
             localStorage.setItem("password_" + window.qid, $('#form_password').val())
@@ -250,7 +259,7 @@ function areaToSingle() {
     for (var k in arrays) {
         var val = arrays[k].trim();
         if (val == '') continue
-        vals = val.split('|');
+        vals = val.split('¶');
         if (vals.length > 1) {
             $('.form_row').eq(i).data('indent',0).css('margin-left','0px')
             $('.form_optional').eq(i).prop('checked',false)
@@ -299,7 +308,7 @@ function singleToArea() {
         var key = keyAppend+$('.form_id').eq(i).val() || "";
         var name = $('.form_name').eq(i).val() || "";
         var js = $('.form_js').eq(i).val() || "";
-        input += key + "|" + name + "|" + js + "\n";
+        input += key + "¶" + name + "¶" + js + "\n";
         i++
     }
 
