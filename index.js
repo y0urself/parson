@@ -4,13 +4,14 @@ var app = express();
 // var exec = require('child_process').exec;
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var quiz = require('./quiz.js');
 var mustache = require('mustache');
 var mustacheExpress = require('mustache-express');
 var auth = require('http-auth');
 var fs = require('fs');
 const passwordHash = require('password-hash');
 
+var bill = require('./bill.js');
+var part = require('./part.js');
 const use_dynamo = process.env.DYNAMO === 'yes'
 const master_pw = process.env.MASTER_PW || false
 const auth_admin = process.env.AUTH_ADMIN || false
@@ -27,50 +28,118 @@ if (use_dynamo) {
 }
 
 
-var puzzles = {}
+var bills = {}
+var parts = {}
 
+// Calls for Bills
 if (use_dynamo) {
     var dynamo = {
-        put: function() {
-            for (var i in puzzles) {
+        put_bills: function() {
+            for (var i in bills) {
                 var params = {
-                    TableName: 'puzzles',
-                    Item: dynamo.removeEmptyStringElements(puzzles[i])
+                    TableName: 'bills',
+                    Item: dynamo.removeEmptyStringElements(bills[i])
                 };
                 ddb.put(params, function(err, data) {
                     if (err) {
                         console.log("Error", err);
                     } else {
-                        //             console.log("Success", data);
+                        console.log("Success", data);
                     }
                 });
             }
         },
-        fetch: function() {
+        put_bill: function(bill) {
             var params = {
-                TableName: 'puzzles'
+                TableName: 'bills',
+                Item: dynamo.removeEmptyStringElements(bills[i])
+            };
+            ddb.put(params, function(err, data) {
+                if (err) {
+                    console.log("Error", err);
+                } else {
+                    console.log("Success", data);
+                }
+            });
+        },
+        put_parts: function() {
+            for (var i in parts) {
+                var params = {
+                    TableName: 'parts',
+                    Item: dynamo_parts.removeEmptyStringElements(parts[i])
+                };
+                ddb.put(params, function(err, data) {
+                    if (err) {
+                        console.log("Error", err);
+                    } else {
+                        console.log("Success", data);
+                    }
+                });
+            }
+        },
+        fetch_bills: function() {
+            var params = {
+                TableName: 'bills'
             };
             // Call DynamoDB to add the item to the table
             ddb.scan(params, function(err, data) {
                 if (err) {
                     console.log("Error", err);
                 } else {
-                    var ob = {};
+                    var db_bills = {};
                     data = data.Items
                     for (var i in data) {
                         console.log(data[i])
-                        ob[data[i].id] = data[i]
+                        db_bills[data[i].id] = data[i]
                     }
-                    puzzles = ob
-                    //             console.log("Success", data);
-                    //             console.log(puzzles)
+                    bills = db_bills
+                    console.log("Success", data);
+                    console.log(bills)
                 }
             });
 
         },
-        del: function(id) {
+        fetch_parts: function() {
             var params = {
-                TableName: 'puzzles',
+                TableName: 'parts'
+            };
+            // Call DynamoDB to add the item to the table
+            ddb.scan(params, function(err, data) {
+                if (err) {
+                    console.log("Error", err);
+                } else {
+                    var db_parts = {};
+                    data = data.Items
+                    for (var i in data) {
+                        console.log(data[i])
+                        db_parts[data[i].id] = data[i]
+                    }
+                    parts = db_parts
+                    //             console.log("Success", data);
+                    console.log(parts)
+                }
+            });
+
+        },
+        del_bill: function(id) {
+            var params = {
+                TableName: 'bills',
+                Key: {
+                    id: id
+                }
+            };
+            // Call DynamoDB to delete the item from the table
+            ddb.delete(params, function(err, data) {
+                if (err) {
+                    console.log("Error", err);
+                } else {
+                    console.log("suc", data);
+                }
+            });
+        },
+        del_part: function(id) {
+            var params = {
+                TableName: 'parts',
                 Key: {
                     id: id
                 }
@@ -100,14 +169,26 @@ if (use_dynamo) {
     const storage = require('node-persist');
     storage.initSync();
     var dynamo = {
-        put: function() {
-            storage.setItemSync('puzzles', puzzles)
+        put_bills: function() {
+            storage.setItemSync('bills', bills)
         },
-        fetch: function() {
-            puzzles = storage.getItemSync('puzzles');
+        put_bill: function(bill) {
+            dynamo.put_bills()
         },
-        del: function(id) {
-            dynamo.put()
+        put_parts: function() {
+            storage.setItemSync('parts', parts)
+        },
+        fetch_bills: function() {
+            bills = storage.getItemSync('bills');
+        },
+        fetch_parts: function() {
+            parts = storage.getItemSync('parts');
+        },
+        del_bill: function(id) {
+            dynamo.put_bill()
+        },
+        del_part: function(id) {
+            dynamo_parts.put_parts()
         }
     }
 }
@@ -152,7 +233,7 @@ http.listen(port, function() {
 
 if(auth_admin!==false) {
     app.use(auth.connect(auth.basic({
-            realm: "Parson Area."}, (username, password, callback) => { 
+            realm: "Rechnungen."}, (username, password, callback) => { 
                 callback(username === auth_admin && password === auth_pass);
             })
     ));
@@ -161,15 +242,11 @@ app.engine('html', mustacheExpress());
 app.set('view engine', 'html');
 app.set('views', __dirname + '/html');
 
-console.log(puzzles)
-dynamo.fetch()
+dynamo.fetch_bills()
+dynamo.fetch_parts()
 
-function getPuzzlePublic(puzzle) {
-    var sendquiz = Object.assign({}, puzzle)
-    sendquiz.password = false;
-    return sendquiz;
-}
-
+console.log(bills)
+console.log(parts)
 
 var texTemplate;
 fs.readFile(__dirname + '/tex/test.tex', function(err, data) {
@@ -181,42 +258,80 @@ fs.readFile(__dirname + '/tex/test.tex', function(err, data) {
 });
 
 
-app.get('/puzzles/:puzzleID', function(req, res) {
-    switch (req.params.puzzleID) {
-        case 'new':
-            res.render('new', {});
+app.get('/parts/:partID', function(req, res) {
+    switch (req.params.partID) {
+        case 'new_part':
+            res.render('new_part', {});
             break;
         case 'local':
-            res.render('puzzle', {
-                urlprefix: '/puzzles/',
-                id: req.params.puzzleID
+            res.render('part', {
+                urlprefix: '/parts/',
+                id: req.params.partID
             });
             break;
         default:
-            res.render('puzzle', {
-                urlprefix: '/puzzles/',
-                id: req.params.puzzleID
+            res.render('part', {
+                urlprefix: '/parts/',
+                id: req.params.partID,
+                part: parts[req.params.partID]
             });
     }
 });
 
-app.get(['/puzzles/', '/'], function(req, res) {
-    var sendpuzzles = [];
-    for (var k in puzzles) {
-        if (puzzles[k].hidePuzzle !== true)
-            sendpuzzles.push(puzzles[k])
+app.get('/bills/:billID', function(req, res) {
+    switch (req.params.billID) {
+        case 'new_bill':
+            res.render('new_bill', {});
+            break;
+        case 'local':
+            res.render('bill', {
+                urlprefix: '/bills/',
+                id: req.params.billID
+            });
+            break;
+        default:
+            res.render('bill', {
+                urlprefix: '/bills/',
+                id: req.params.billID,
+                bill: bills[req.params.billID]
+            });
+    }
+});
+
+app.get(['/bills/', '/'], function(req, res) {
+    var sendbills = [];
+    for (var k in bills) {
+        sendbills.push(bills[k])
     }
     res.render('list', {
-        urlprefix: '/puzzles/',
-        puzzles: sendpuzzles
+        urlprefix: '/bills/',
+        bills: sendbills
     });
 });
 
-app.get(['/puzzles/:puzzleID/edit', '/puzzles/:puzzleID/duplicate'], function(req, res) {
-    res.render('new', {
-        id: req.params.puzzleID
+app.get(['/parts/'], function(req, res) {
+    var sendparts = [];
+    for (var k in parts) {
+        sendparts.push(parts[k])
+    }
+    res.render('parts', {
+        urlprefix: '/parts/',
+        parts: sendparts
     });
 });
+
+app.get(['/parts/:partID/edit_part', '/parts/:partID/duplicate'], function(req, res) {
+    res.render('new_part', {
+        id: req.params.partID
+    });
+});
+
+app.get(['/bills/:billID/edit', '/bills/:billID/duplicate'], function(req, res) {
+    res.render('new_bill', {
+        id: req.params.billID
+    });
+});
+
 app.get(['/puzzles/:puzzleID/tex'], function(req, res) {
     var puzzle = texing(req.params.puzzleID);
     res.setHeader('Content-type', 'application/x-tex');
@@ -260,68 +375,105 @@ function sendSerializationToGroup(group, message) {
     }
 }
 io.on('connection', function(socket) {
-    socket.on('request', function(msg) {
-        if (puzzles[msg] == undefined) {
+    socket.on('request_part', function(msg) {
+        if (parts[msg] == undefined) {
             socket.emit('state', 'ERROR')
         } else {
-            socket.emit('state', getPuzzlePublic(puzzles[msg]));
-            socket.puzzle = msg;
-        }
-    });
-    socket.on('serialized', function(msg) {
-        if (puzzles[socket.puzzle] != undefined) {
-            if (socket.collab != undefined) {
-                collab[socket.puzzle + "_" + socket.collab].serialization = msg
-                sendSerializationToGroup(socket.puzzle + "_" + socket.collab, msg)
-            }
+            socket.emit('state', parts[msg])
+            socket.part = parts[msg];
         }
     });
 
-    socket.on('new', function(msg) {
-        var q = new quiz(msg.name, msg.description, msg.parts, msg.order, msg.js_input, msg.js_pre, msg.js_suf, msg.disableCollab, msg.disableJS, msg.hidePuzzle, passwordHash.generate(msg.password))
-        puzzles[q.id] = q
-        socket.emit('redirect', '/puzzles/' + q.id)
-        dynamo.put();
-        console.log(puzzles)
+    socket.on('new_part', function(msg) {
+        console.log("new part ...")
+        var p = new part(msg.name, msg.parttype, msg.description, msg.bprice)
+        parts[p.id] = p
+        socket.emit('redirect', '/parts/' + p.id)
+        dynamo_parts.put_parts()
+        console.log("Parts" + parts)
     });
-
-    socket.on('edit', function(msg) {
-        if (puzzles[msg.qid] != undefined) {
-            if ((master_pw != false && msg.password == master_pw) || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password, puzzles[msg.qid].password))) {
-                var q = new quiz(msg.name, msg.description, msg.parts, msg.order, msg.js_input, msg.js_pre, msg.js_suf, msg.disableCollab, msg.disableJS, msg.hidePuzzle, puzzles[msg.qid].password, msg.qid)
-                puzzles[q.id] = q
-                socket.emit('redirect', '/puzzles/' + q.id)
-                dynamo.put();
-                console.log(puzzles)
-            } else {
-                console.log("wrong PW")
-                socket.emit('alert', {
-                    type: 'danger',
-                    message: "Passwort Falsch!"
-                })
-            }
+    
+    socket.on('new_parts_from_bill', function(msg) {
+        console.log("new parts from bill ...")
+        part_ids = []
+        console.log(msg)
+        msg.forEach(function (item, index) {
+            console.log(item, index);
+            var p = new part(item.name, item.parttype, item.description, item.bprice)
+            parts[p.id] = p
+            part_ids.push(p.id)
+          });
+        socket.emit('part_ids', {
+            ids: part_ids
+        })   
+        socket.emit('alert', {
+            type: 'success', 
+            message: 'Komponenten erfolgreich erstellt!', 
+            timeout: 10000
+        })        
+        dynamo.put_parts()
+        console.log("Parts" + parts)
+    });
+    
+    socket.on('edit_part', function(msg) {
+        if (parts[msg.qid] != undefined) {
+            var p = new part(msg.name, msg.parttype, msg.description, msg.bprice, msg.qid)
+            parts[p.id] = p
+            socket.emit('redirect', '/parts/' + p.id)
+            dynamo.put_parts();
+            console.log(parts)
         }
     });
-
-    socket.on('delete', function(msg) {
-        if (puzzles[msg.qid] != undefined) {
-            if ((master_pw != false && msg.password == master_pw) || (passwordHash.isHashed(puzzles[msg.qid].password) && passwordHash.verify(msg.password, puzzles[msg.qid].password))) {
-                delete puzzles[msg.qid]
-                dynamo.del(msg.qid)
-                socket.emit('alert', 'Erfolgreich gelöscht!')
-                socket.emit('redirect', '/puzzles/')
-                dynamo.put();
-            } else {
-                console.log("wrong PW")
-                socket.emit('alert', {
-                    type: 'danger',
-                    message: "Passwort Falsch!"
-                })
-            }
+    
+    socket.on('delete_part', function(msg) {
+        if (parts[msg.qid] != undefined) {
+            delete parts[msg.qid]
+            dynamo.del_part(msg.qid)
+            socket.emit('redirect', '/parts/')
+            socket.emit('alert', {
+                type: 'success', 
+                message: 'Erfolgreich gelöscht!', 
+                timeout: 10000
+            })
+            //dynamo.put_parts();
         }
-
+        
+    });
+    
+    ////// BILLS Stuff /////////
+    socket.on('new_bill', function(msg) {
+        var bi = new bill(msg.name, msg.surname, msg.street, msg.city, msg.date, msg.number, msg.type, msg.parts)
+        console.log(bi)
+        bills[bi.id] = bi
+        socket.emit('redirect', '/bills/' + bi.id)
+        dynamo.put_bills();
+        console.log(bills)
     });
 
+    socket.on('edit_bill', function(msg) {
+        if (bills[msg.qid] != undefined) {
+            var b = new bill(msg.name, msg.surname, msg.street, msg.city, msg.date, msg.number, msg.type, msg.parts, msg.qid)
+            bills[b.id] = b
+            socket.emit('redirect', '/bills/' + b.id)
+            dynamo.put_bills();
+            console.log(bills)
+        }
+    });
+    
+    socket.on('delete_bill', function(msg) {
+        if (bills[msg.qid] != undefined) {
+            delete bills[msg.qid]
+            dynamo.del_bills(msg.qid)
+            socket.emit('redirect', '/bills/')
+            socket.emit('alert', {
+                type: 'success', 
+                message: 'Erfolgreich gelöscht!', 
+                timeout: 10000
+            })
+            //dynamo.put_bills();
+        }
+        
+    });    
 
     //Admin-Function - Sendet eine Komplett Nutzerspezifizierte Nachricht an alle Connections.
     //Beispiel (im Browser): socket.emit('admin_broadcast',{password:'masterpw',topic:'alert',message:{type:'danger', message:"Server startet in 10 Minuten neu!"}});
@@ -332,82 +484,4 @@ io.on('connection', function(socket) {
         }
     });
 
-    // Collaborate: Links an user to a collaboration-Group
-    socket.on('collaborate', function(msg) {
-        if (msg == '') {
-            if (socket.collab != undefined && socket.puzzle != undefined) {
-                console.log("removing from collablist" + socket.puzzle + "_" + socket.collab)
-                if (collab[socket.puzzle + "_" + socket.collab].sockets.includes(socket.id)) {
-                    var idx = collab[socket.puzzle + "_" + socket.collab].sockets.indexOf(socket.id)
-                    collab[socket.puzzle + "_" + socket.collab].sockets.splice(idx, 1)
-                }
-                socket.emit('alert', {
-                    type: 'success',
-                    message: "Du hast die Gruppe >" + socket.collab + "< verlassen!",
-                    timeout: 10000
-                })
-                delete socket.collab;
-            }
-        } else {
-            if(msg=='socket.collab') {
-                socket.emit('alert', {
-                    type: 'success',
-                    message: "Du bist schon in der Gruppe >" + msg + "<!",
-                    timeout: 10000
-                })
-                return
-            }
-            if (socket.collab != undefined && socket.puzzle != undefined) {
-                if (collab[socket.puzzle + "_" + socket.collab].sockets.includes(socket.id)) {
-                    var idx = collab[socket.puzzle + "_" + socket.collab].sockets.indexOf(socket.id)
-                    collab[socket.puzzle + "_" + socket.collab].sockets.splice(idx, 1)
-                    socket.emit('alert', {
-                        type: 'success',
-                        message: "Du hast die Gruppe >" + socket.collab + "< verlassen!",
-                        timeout: 10000
-                    })
-                }
-
-            }
-            socket.collab = msg;
-            if (socket.puzzle == undefined) {
-                console.log("Socket did not yet join a puzzle, ignoring")
-            }
-            if (collab[socket.puzzle + "_" + socket.collab] == undefined) {
-                collab[socket.puzzle + "_" + socket.collab] = {
-                    sockets: [socket.id],
-                    serialization: ''
-                };
-                socket.emit('alert', {
-                    type: 'success',
-                    message: "Du hast die Gruppe >" + msg + "< neu erstellt!",
-                    timeout: 10000
-                })
-
-                //request the client to send their serialization
-                socket.emit('serializationRequest', '1');
-            } else {
-                if (!collab[socket.puzzle + "_" + socket.collab].sockets.includes(socket.id))
-                    collab[socket.puzzle + "_" + socket.collab].sockets.push(socket.id);
-                //group already existed, sending last known serialization
-                var known_serialization = collab[socket.puzzle + "_" + socket.collab].serialization
-                socket.emit('alert', {
-                    type: 'success',
-                    message: "Du bist der Gruppe >" + msg + "< beigetreten!",
-                    timeout: 10000
-                })
-                if (known_serialization != '') {
-                    sendSerializationToGroup(socket.puzzle + "_" + socket.collab, known_serialization)
-                } else {
-                    //request the client to send their serialization
-                    socket.emit('serializationRequest', '1');
-                    socket.emit('alert', {
-                        type: 'warning',
-                        message: "In der Gruppe existierte noch keine Lösung, daher wurde deine lokale Lösung verwendet!",
-                        timeout: 10000
-                    })
-                }
-            }
-        }
-    });
 });

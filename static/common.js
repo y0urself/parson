@@ -1,4 +1,3 @@
-var ParsonAPP = ParsonAPP || {};
 var CommonAPP = CommonAPP || {};
 var socket = io();
 

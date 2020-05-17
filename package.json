@@ -13,14 +13,15 @@
   "dependencies": {
     "aws-sdk": "^2.227.1",
     "express": "^4.16.3",
-    "guid": "*",
+    "node-uuid": "*",
     "http-auth": "^3.2.3",
     "mustache": "^2.3.0",
     "mustache-express": "*",
     "node-persist": "2.1.0",
     "password-hash": "^1.2.2",
     "socket.io": "^2.0.1",
-    "uuid": "*"
+    "uuid": "*",
+    "accounting": "*"
   },
   "author": "Till Zimmermann",
   "license": "Closed Source so far",
